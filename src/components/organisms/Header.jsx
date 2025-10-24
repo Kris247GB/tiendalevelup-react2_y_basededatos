@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { scroller } from 'react-scroll';
-import { mostrarMensaje } from '../Atoms/Validaciones';
+import { carrito, mostrarMensaje } from '../Atoms/Validaciones'; // ⬅️ importa carrito
 
 const Header = () => {
   const [carritoCount, setCarritoCount] = useState(0);
@@ -11,9 +11,12 @@ const Header = () => {
 
   useEffect(() => {
     const actualizarCarrito = () => {
-      if (typeof carrito !== 'undefined' && carrito.items) {
-        const total = carrito.items.reduce((sum, item) => sum + item.cantidad, 0);
+ 
+      if (carrito && Array.isArray(carrito.items)) {
+        const total = carrito.items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
         setCarritoCount(total);
+      } else {
+        setCarritoCount(0);
       }
     };
 
@@ -53,6 +56,8 @@ const Header = () => {
     }
   };
 
+  const isAdmin = isLoggedIn && sessionStorage.getItem('isAdmin') === 'true';
+
   return (
     <header>
       <div className="logo">
@@ -61,7 +66,7 @@ const Header = () => {
 
       <nav>
         <ul>
-          {/* Links de scroll interno (si estás fuera de Home, vuelve y luego hace scroll) */}
+          {/* Scroll interno */}
           <li><button className="linklike" onClick={() => go('inicio')}>Inicio</button></li>
           <li><button className="linklike" onClick={() => go('catalogo')}>Catálogo</button></li>
           <li><button className="linklike" onClick={() => go('comunidad')}>Comunidad</button></li>
@@ -73,6 +78,11 @@ const Header = () => {
             <li><RouterLink to="/perfil">Mi Perfil</RouterLink></li>
           ) : (
             <li><RouterLink to="/login">Login</RouterLink></li>
+          )}
+
+          {/* Enlace Admin (solo si es admin) */}
+          {isAdmin && (
+            <li><RouterLink to="/admin">Admin</RouterLink></li>
           )}
 
           <li>

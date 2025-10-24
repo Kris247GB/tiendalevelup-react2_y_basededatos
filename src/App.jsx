@@ -10,7 +10,7 @@ import Header from './components/organisms/Header';
 import Carrito from './components/page/Carrito';
 import Perfil from './components/page/Perfil';
 import Play from './components/page/Play';
-
+import AdminPanel from './components/admin/AdminPanel';
 
 function App() {
   return (
@@ -25,6 +25,7 @@ function App() {
           <Route path="/registro" element={<Registro/>} />
           <Route path="/detalles" element={<Play/>} />
           <Route path="/detalles" element={<Perfil/>} />
+          <Route path="/admin" element={<AdminPanel />} />
         </Routes>
         <Footer />
       </div>
