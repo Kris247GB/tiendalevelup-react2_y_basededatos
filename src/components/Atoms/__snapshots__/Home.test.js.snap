@@ -1,0 +1,590 @@
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
+
+exports[`Home Component - 10 Pruebas Unitarias debe coincidir con el snapshot 1`] = `
+<div>
+  <main>
+    <section
+      id="inicio"
+    >
+      <h2>
+        Bienvenido a Level-Up Gamer
+      </h2>
+      <p>
+        Tu tienda online gamer en Chile 🚀
+      </p>
+      <p
+        style="color: rgb(57, 255, 20); margin-top: 1rem;"
+      >
+        ¡Gana puntos LevelUp con cada compra y desbloquea descuentos exclusivos!
+      </p>
+    </section>
+    <section
+      id="catalogo"
+    >
+      <h2>
+        Nuestros Productos
+      </h2>
+      <div
+        class="filtros-container"
+        style="max-width: 1200px; margin: 0px auto 2rem; display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 1rem; padding: 0px 2rem;"
+      >
+        <div>
+          <label
+            for="busqueda"
+            style="display: block; color: rgb(211, 211, 211); margin-bottom: 0.5rem; font-weight: 600;"
+          >
+            🔍 Buscar productos
+          </label>
+          <input
+            id="busqueda"
+            placeholder="Buscar por nombre..."
+            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgb(34, 34, 34); background: rgb(26, 26, 26); color: rgb(255, 255, 255); font-size: 1rem;"
+            type="text"
+            value=""
+          />
+        </div>
+        <div>
+          <label
+            for="filtro-categoria"
+            style="display: block; color: rgb(211, 211, 211); margin-bottom: 0.5rem; font-weight: 600;"
+          >
+            📦 Categoría
+          </label>
+          <select
+            id="filtro-categoria"
+            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgb(34, 34, 34); background: rgb(26, 26, 26); color: rgb(255, 255, 255); font-size: 1rem; cursor: pointer;"
+          >
+            <option
+              value="todas"
+            >
+              Todas las categorías
+            </option>
+            <option
+              value="juegos-mesa"
+            >
+              Juegos de Mesa
+            </option>
+            <option
+              value="accesorios"
+            >
+              Accesorios
+            </option>
+            <option
+              value="consolas"
+            >
+              Consolas
+            </option>
+            <option
+              value="computadores"
+            >
+              Computadores Gamers
+            </option>
+            <option
+              value="sillas"
+            >
+              Sillas Gamers
+            </option>
+            <option
+              value="mouse"
+            >
+              Mouse
+            </option>
+            <option
+              value="mousepad"
+            >
+              Mousepad
+            </option>
+            <option
+              value="poleras"
+            >
+              Poleras Personalizadas
+            </option>
+            <option
+              value="polerones"
+            >
+              Polerones Gamers
+            </option>
+          </select>
+        </div>
+        <div>
+          <label
+            for="filtro-precio"
+            style="display: block; color: rgb(211, 211, 211); margin-bottom: 0.5rem; font-weight: 600;"
+          >
+            💰 Rango de precio
+          </label>
+          <select
+            id="filtro-precio"
+            style="width: 100%; padding: 0.8rem; border-radius: 8px; border: 1px solid rgb(34, 34, 34); background: rgb(26, 26, 26); color: rgb(255, 255, 255); font-size: 1rem; cursor: pointer;"
+          >
+            <option
+              value="todos"
+            >
+              Todos los precios
+            </option>
+            <option
+              value="bajo"
+            >
+              Menos de $50.000
+            </option>
+            <option
+              value="medio"
+            >
+              $50.000 - $200.000
+            </option>
+            <option
+              value="alto"
+            >
+              Más de $200.000
+            </option>
+          </select>
+        </div>
+      </div>
+      <div
+        class="productos"
+      >
+        <article
+          class="producto"
+          data-categoria="juegos-mesa"
+          data-codigo="JM001"
+          data-precio="29990"
+        >
+          <img
+            alt="Catan"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTVZG1G_ZdkpPVHE9O8kqSNWPRHjKC3Vz9Sag&s"
+          />
+          <h3>
+            Catan
+          </h3>
+          <p
+            class="precio"
+          >
+            $29.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Un clásico juego de estrategia para 3-4 jugadores.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="juegos-mesa"
+          data-codigo="JM002"
+          data-precio="24990"
+        >
+          <img
+            alt="Carcassonne"
+            src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRUNb5P5Cj9UCEVmLua1VI7Z81P79V4DtMu0Q&s"
+          />
+          <h3>
+            Carcassonne
+          </h3>
+          <p
+            class="precio"
+          >
+            $24.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Juego de fichas y construcción de paisajes medievales.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="consolas"
+          data-codigo="CO001"
+          data-precio="549990"
+        >
+          <img
+            alt="PlayStation 5"
+            src="https://gsmpro.cl/cdn/shop/articles/16991bf65a7a52901d78b55fa36bddc8.jpg?v=1737343320"
+          />
+          <h3>
+            PlayStation 5
+          </h3>
+          <p
+            class="precio"
+          >
+            $549.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Consola de nueva generación con gráficos impresionantes.
+          </p>
+          <a
+            class="btn-detalles"
+            data-discover="true"
+            href="/play"
+          >
+            Ver detalles
+          </a>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="computadores"
+          data-codigo="CG001"
+          data-precio="1299990"
+        >
+          <img
+            alt="PC Gamer ASUS ROG Strix"
+            src="https://dlcdnwebimgs.asus.com/files/media/6C1CAB30-D5C6-4D6E-90DC-B6A088360E12/V1/img/frame/01.jpg"
+          />
+          <h3>
+            PC Gamer ASUS ROG Strix
+          </h3>
+          <p
+            class="precio"
+          >
+            $1.299.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Potente equipo para los gamers más exigentes.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="sillas"
+          data-codigo="SG001"
+          data-precio="349990"
+        >
+          <img
+            alt="Silla Gamer Secretlab Titan"
+            src="https://m.media-amazon.com/images/I/51ajrSvAdiL.jpg"
+          />
+          <h3>
+            Silla Gamer Secretlab Titan
+          </h3>
+          <p
+            class="precio"
+          >
+            $349.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Ergonómica, cómoda y ajustable para largas sesiones de juego.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="mouse"
+          data-codigo="MS001"
+          data-precio="49990"
+        >
+          <img
+            alt="Mouse Gamer Logitech G502 HERO"
+            src="https://m.media-amazon.com/images/I/61mpMH5TzkL._AC_UF894,1000_QL80_.jpg"
+          />
+          <h3>
+            Mouse Gamer Logitech G502 HERO
+          </h3>
+          <p
+            class="precio"
+          >
+            $49.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Sensor de alta precisión y botones personalizables.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+        <article
+          class="producto"
+          data-categoria="mousepad"
+          data-codigo="MP001"
+          data-precio="29990"
+        >
+          <img
+            alt="Mousepad Razer Goliathus Extended Chroma"
+            src="https://assets2.razerzone.com/images/pnx.assets/f024c732d60734e43b0c95945683c3cc/razer-goliathus-extended-chroma-size.jpg"
+          />
+          <h3>
+            Mousepad Razer Goliathus Extended Chroma
+          </h3>
+          <p
+            class="precio"
+          >
+            $29.990 CLP
+          </p>
+          <p
+            class="descripcion"
+          >
+            Área de juego amplia con iluminación RGB personalizable.
+          </p>
+          <button
+            class="btn-agregar"
+          >
+            Agregar al carrito
+          </button>
+        </article>
+      </div>
+    </section>
+    <section
+      id="comunidad"
+    >
+      <h2>
+        Comunidad Gamer
+      </h2>
+      <p>
+        Explora artículos, noticias y consejos para mejorar tu experiencia de juego.
+      </p>
+      <div
+        style="max-width: 800px; margin: 2rem auto; text-align: left; padding: 0px 2rem;"
+      >
+        <h3
+          style="color: rgb(57, 255, 20); margin-bottom: 1rem;"
+        >
+          Últimas Noticias
+        </h3>
+        <div
+          style="background: rgb(17, 17, 17); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid rgb(30, 144, 255);"
+        >
+          <h4
+            style="color: rgb(30, 144, 255); margin-bottom: 0.5rem;"
+          >
+            🎮 Próximos Lanzamientos 2025
+          </h4>
+          <p
+            style="color: rgb(211, 211, 211);"
+          >
+            Descubre los juegos más esperados del año y prepárate para las mejores experiencias gaming.
+          </p>
+        </div>
+        <div
+          style="background: rgb(17, 17, 17); padding: 1.5rem; border-radius: 12px; margin-bottom: 1rem; border-left: 4px solid rgb(57, 255, 20);"
+        >
+          <h4
+            style="color: rgb(57, 255, 20); margin-bottom: 0.5rem;"
+          >
+            🏆 Consejos para Mejorar tu Setup
+          </h4>
+          <p
+            style="color: rgb(211, 211, 211);"
+          >
+            Optimiza tu estación de juego con nuestras recomendaciones de expertos.
+          </p>
+        </div>
+      </div>
+    </section>
+    <section
+      id="eventos"
+    >
+      <h2>
+        Eventos Gamer en Chile
+      </h2>
+      <p
+        style="margin-bottom: 2rem;"
+      >
+        ¡Participa en eventos y gana puntos LevelUp!
+      </p>
+      <div
+        style="max-width: 1000px; margin: 0px auto;"
+      >
+        <div
+          style="background: rgb(17, 17, 17); padding: 2rem; border-radius: 16px; border: 1px solid rgb(34, 34, 34);"
+        >
+          <h3
+            style="color: rgb(30, 144, 255); margin-bottom: 1.5rem;"
+          >
+            📍 Próximos Eventos
+          </h3>
+          <div
+            style="display: grid; gap: 1rem;"
+          >
+            <div
+              style="background: rgb(26, 26, 26); padding: 1.5rem; border-radius: 12px; border-left: 4px solid rgb(30, 144, 255);"
+            >
+              <h4
+                style="color: rgb(57, 255, 20); margin-bottom: 0.5rem;"
+              >
+                🎮 Chile Gaming Expo 2025
+              </h4>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Fecha:
+                </strong>
+                 15-17 Noviembre 2025
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Lugar:
+                </strong>
+                 Centro de Eventos Movistar Arena, Santiago
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Puntos:
+                </strong>
+                 200 LevelUp por asistencia
+              </p>
+            </div>
+            <div
+              style="background: rgb(26, 26, 26); padding: 1.5rem; border-radius: 12px; border-left: 4px solid rgb(57, 255, 20);"
+            >
+              <h4
+                style="color: rgb(57, 255, 20); margin-bottom: 0.5rem;"
+              >
+                🏆 Torneo League of Legends Regional
+              </h4>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Fecha:
+                </strong>
+                 5 Diciembre 2025
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Lugar:
+                </strong>
+                 Centro Cultural Gabriela Mistral, Santiago
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Puntos:
+                </strong>
+                 300 LevelUp por participación
+              </p>
+            </div>
+            <div
+              style="background: rgb(26, 26, 26); padding: 1.5rem; border-radius: 12px; border-left: 4px solid rgb(30, 144, 255);"
+            >
+              <h4
+                style="color: rgb(57, 255, 20); margin-bottom: 0.5rem;"
+              >
+                🎯 Meetup Gamers Valparaíso
+              </h4>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Fecha:
+                </strong>
+                 20 Diciembre 2025
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Lugar:
+                </strong>
+                 Puerto Valparaíso
+              </p>
+              <p
+                style="color: rgb(211, 211, 211); margin: 0.5rem 0px;"
+              >
+                <strong>
+                  Puntos:
+                </strong>
+                 150 LevelUp por asistencia
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section
+      id="contacto"
+    >
+      <h2>
+        Contacto
+      </h2>
+      <p>
+        ¿Necesitas ayuda? Estamos aquí para ti.
+      </p>
+      <div
+        style="max-width: 600px; margin: 2rem auto; text-align: left; padding: 0px 2rem;"
+      >
+        <div
+          style="background: rgb(17, 17, 17); padding: 2rem; border-radius: 12px; border: 1px solid rgb(34, 34, 34);"
+        >
+          <p
+            style="margin-bottom: 1rem;"
+          >
+            📧 Email: 
+            <a
+              href="mailto:soporte@levelupgamer.cl"
+              style="color: rgb(30, 144, 255);"
+            >
+              soporte@levelupgamer.cl
+            </a>
+          </p>
+          <p
+            style="margin-bottom: 1rem;"
+          >
+            📱 WhatsApp: 
+            <a
+              href="https://wa.me/56912345678"
+              rel="noopener noreferrer"
+              style="color: rgb(57, 255, 20);"
+              target="_blank"
+            >
+              +56 9 1234 5678
+            </a>
+          </p>
+          <p
+            style="margin-bottom: 1rem;"
+          >
+            🕐 Horario de atención: Lunes a Viernes, 9:00 - 18:00 hrs
+          </p>
+          <a
+            href="https://wa.me/56912345678"
+            rel="noopener noreferrer"
+            style="display: inline-block; background: rgb(37, 211, 102); color: white; padding: 0.8rem 1.5rem; border-radius: 8px; text-decoration: none; font-weight: bold; margin-top: 1rem;"
+            target="_blank"
+          >
+            💬 Chat con Soporte Técnico
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+`;
