@@ -9,7 +9,7 @@ import Login from './components/page/Login';
 import Header from './components/organisms/Header';
 import Carrito from './components/page/Carrito';
 import Perfil from './components/page/Perfil';
-import Play from './components/page/Play';
+import Detalles from './components/page/Detalles';
 import AdminPanel from './components/admin/AdminPanel';
 
 function App() {
@@ -23,7 +23,7 @@ function App() {
           <Route path="/login" element={<Login/>} />
           <Route path="/perfil" element={<Perfil/>} />
           <Route path="/registro" element={<Registro/>} />
-          <Route path="/detalles" element={<Play/>} />
+          <Route path="/detalles" element={<Detalles/>} />
           <Route path="/detalles" element={<Perfil/>} />
           <Route path="/admin" element={<AdminPanel />} />
         </Routes>

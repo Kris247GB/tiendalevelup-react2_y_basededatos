@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
-import { obtenerProductos } from '../../api/productos';  // <-- NUEVO
+import { obtenerProductos } from '../../api/productos';
 
 const Home = () => {
   const [busqueda, setBusqueda] = useState('');
   const [categoriaFiltro, setCategoriaFiltro] = useState('todas');
   const [precioFiltro, setPrecioFiltro] = useState('todos');
   const [carritoCount, setCarritoCount] = useState(0);
-  const [productos, setProductos] = useState([]);   // <-- NUEVO
+  const [productos, setProductos] = useState([]);
 
   // Cargar productos desde el backend
   useEffect(() => {
@@ -28,16 +28,13 @@ const Home = () => {
   // Filtrado avanzado usando productos traídos del backend
   const filtrarProductos = () => {
     return productos.filter(producto => {
-      // Filtro por búsqueda
       const coincideBusqueda = producto.nombre
         .toLowerCase()
         .includes(busqueda.toLowerCase());
 
-      // Filtro por categoría
       const coincideCategoria =
         categoriaFiltro === "todas" || producto.categoria === categoriaFiltro;
 
-      // Filtro por precio
       const coincidePrecio =
         precioFiltro === "todos" ||
         (precioFiltro === "bajo" && producto.precio < 50000) ||
@@ -162,6 +159,25 @@ const Home = () => {
               <p className="precio">{formatearPrecio(producto.precio)}</p>
               <p className="descripcion">{producto.descripcion}</p>
 
+              {/* VER DETALLES */}
+              <Link
+                to={`/detalles/${producto.id}`}
+                className="btn-detalles"
+                style={{
+                  display: "inline-block",
+                  marginBottom: "0.5rem",
+                  padding: "0.5rem 1rem",
+                  background: "#1E90FF",
+                  color: "white",
+                  borderRadius: "6px",
+                  textDecoration: "none",
+                  fontWeight: "bold"
+                }}
+              >
+                Ver detalles
+              </Link>
+
+              {/* AGREGAR AL CARRITO */}
               <button
                 className="btn-agregar"
                 onClick={() => agregarAlCarrito(producto)}
@@ -173,8 +189,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Aquí continúa TU sección comunidad, eventos y contacto sin cambios */}
-      {/* ... */}
+      {/* TU CONTENIDO ADICIONAL SE MANTIENE */}
+      {/* COMUNIDAD / CONTACTO / EVENTOS */}
     </main>
   );
 };
