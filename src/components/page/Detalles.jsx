@@ -1,45 +1,44 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { obtenerProductoPorId } from "../../api/productos";
-import { carrito, mostrarMensaje } from "../Atoms/Validaciones";
+import carritoReal from "../Atoms/carritoReal";
+import { mostrarMensaje } from "../Atoms/Validaciones";
 
 const Detalles = () => {
-  const { id } = useParams();              // ← ID desde la URL
+  const { id } = useParams(); // ID desde la URL
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
 
+  // Cargar producto del backend
   useEffect(() => {
     obtenerProductoPorId(id)
       .then((data) => {
         setProducto(data);
-        setLoading(false);
       })
       .catch((err) => {
         console.error("Error al cargar producto:", err);
-        setLoading(false);
-      });
+      })
+      .finally(() => setLoading(false));
   }, [id]);
 
+  // Agregar al carrito REAL
   const agregarAlCarrito = () => {
     if (!producto) return;
 
-    const item = {
+    carritoReal.agregar({
+      id: producto.id,
       codigo: producto.codigo,
       nombre: producto.nombre,
       precio: producto.precio,
-      cantidad: 1,
-    };
+      imagen: producto.imagen,
+    });
 
-    if (typeof carrito !== "undefined" && typeof carrito.agregar === "function") {
-      carrito.agregar(item);
-      mostrarMensaje?.("Producto agregado al carrito", "success");
-    } else {
-      alert("Producto agregado");
-    }
+    mostrarMensaje("Producto agregado al carrito", "success");
   };
 
+  // Enviar reseña (mock)
   const handleSubmitReview = (e) => {
     e.preventDefault();
 
@@ -53,12 +52,22 @@ const Detalles = () => {
     setReviewText("");
   };
 
+  // Estado de carga
   if (loading) {
-    return <p style={{ textAlign: "center", marginTop: "2rem", color: "white" }}>Cargando producto...</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "2rem", color: "white" }}>
+        Cargando producto...
+      </p>
+    );
   }
 
+  // Producto no encontrado
   if (!producto) {
-    return <p style={{ textAlign: "center", marginTop: "2rem", color: "red" }}>Producto no encontrado</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "2rem", color: "red" }}>
+        Producto no encontrado
+      </p>
+    );
   }
 
   return (
@@ -72,13 +81,17 @@ const Detalles = () => {
         {/* INFORMACIÓN */}
         <div className="info">
           <h2>{producto.nombre}</h2>
-          <p className="precio">${producto.precio.toLocaleString("es-CL")} CLP</p>
+          <p className="precio">
+            ${producto.precio.toLocaleString("es-CL")} CLP
+          </p>
           <p>{producto.descripcion}</p>
 
           <ul>
             <li><strong>Categoría:</strong> {producto.categoria}</li>
             <li><strong>Stock disponible:</strong> {producto.stock}</li>
-            {producto.destacado && <li style={{ color: "#39FF14" }}>🔥 Producto destacado</li>}
+            {producto.destacado && (
+              <li style={{ color: "#39FF14" }}>🔥 Producto destacado</li>
+            )}
           </ul>
 
           <div className="acciones">
@@ -90,12 +103,14 @@ const Detalles = () => {
               Agregar al carrito
             </button>
 
-            <Link to="/#catalogo" className="btn-volver">← Volver al catálogo</Link>
+            <Link to="/#catalogo" className="btn-volver">
+              ← Volver al catálogo
+            </Link>
           </div>
         </div>
 
         {/* RESEÑAS */}
-        <section id="reviews" className="reviews-card" aria-label="Reseñas del producto">
+        <section id="reviews" className="reviews-card">
           <h2>Reseñas</h2>
 
           <form className="review-form" onSubmit={handleSubmitReview}>
@@ -130,7 +145,7 @@ const Detalles = () => {
             </button>
           </form>
 
-          {/* Reseñas estáticas por ahora */}
+          {/* Reseñas mock */}
           <ul className="reviews-list">
             <li className="review-item">
               <div className="review-head">

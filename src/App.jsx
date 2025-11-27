@@ -17,16 +17,20 @@ function App() {
     <Router>
       <div className="App">
         <Header/>
+
         <Routes>
-          <Route path="/" element={<Home/>} />
-          <Route path="/carrito" element={<Carrito/>} />
-          <Route path="/login" element={<Login/>} />
-          <Route path="/perfil" element={<Perfil/>} />
-          <Route path="/registro" element={<Registro/>} />
-          <Route path="/detalles" element={<Detalles/>} />
-          <Route path="/detalles" element={<Perfil/>} />
+          <Route path="/" element={<Home />} />
+          <Route path="/carrito" element={<Carrito />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/perfil" element={<Perfil />} />
+          <Route path="/registro" element={<Registro />} />
+
+          {/* 🔥 Ruta correcta para ver producto por ID */}
+          <Route path="/detalles/:id" element={<Detalles />} />
+
           <Route path="/admin" element={<AdminPanel />} />
         </Routes>
+
         <Footer />
       </div>
     </Router>
