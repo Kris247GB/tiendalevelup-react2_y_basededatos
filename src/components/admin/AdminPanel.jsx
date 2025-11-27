@@ -1,28 +1,26 @@
-
 import React, { useEffect, useState } from "react";
 import {
-  getAllProducts,
-  listCategories,
-  createProduct,
-  updateProduct,
-  deleteProduct,
-} from "../../data/store";
+  obtenerProductos,
+  crearProducto,
+  actualizarProducto,
+  eliminarProducto
+} from "../../api/productos"; // <-- nuevo
 import { useNavigate } from "react-router-dom";
 
+// Normalizamos el producto del backend a lo que usa el front
 function normalize(p = {}) {
   return {
-    code: p.code ?? p.codigo ?? "",
-    name: p.name ?? p.nombre ?? "",
-    priceCLP: p.priceCLP ?? p.precio ?? 0,
-    category: p.category ?? p.categoria ?? "",
-    image: p.image ?? p.imagen ?? "",
-    description: p.description ?? p.descripcion ?? "",
-    stock: p.stock ?? p.cantidad ?? 0,
-    onOffer: p.onOffer ?? p.destacado ?? false,
-    offerPriceCLP: p.offerPriceCLP ?? p.precioOferta ?? undefined,
+    id: p.id ?? "",
+    code: p.codigo ?? "",
+    name: p.nombre ?? "",
+    priceCLP: p.precio ?? 0,
+    category: p.categoria ?? "",
+    image: p.imagen ?? "",
+    description: p.descripcion ?? "",
+    stock: p.stock ?? 0,
+    onOffer: p.destacado ?? false,
   };
 }
-
 
 function fmtCLP(n) {
   const num = Number(n || 0);
@@ -30,6 +28,7 @@ function fmtCLP(n) {
 }
 
 const EMPTY = {
+  id: "",
   code: "",
   name: "",
   priceCLP: "",
@@ -38,7 +37,6 @@ const EMPTY = {
   description: "",
   stock: "",
   onOffer: false,
-  offerPriceCLP: "",
 };
 
 export default function AdminPanel() {
@@ -47,7 +45,7 @@ export default function AdminPanel() {
   const [products, setProducts] = useState([]);
   const [cats, setCats] = useState([]);
   const [q, setQ] = useState("");
-  const [editing, setEditing] = useState(null); 
+  const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
 
   useEffect(() => {
@@ -58,13 +56,27 @@ export default function AdminPanel() {
       navigate("/login");
       return;
     }
-    try { setCats((listCategories() || []).filter(c => c !== "Todas")); } catch {}
+
     refresh();
   }, []);
 
   const refresh = () => {
-    const all = getAllProducts({ q }) || [];
-    setProducts(all.map(normalize));
+    obtenerProductos().then(data => {
+      const items = data.map(normalize);
+
+      // Generar categorías dinámicas desde los productos reales
+      const categories = [...new Set(items.map(p => p.category).filter(Boolean))];
+      setCats(categories);
+
+      // Filtrado básico por búsqueda
+      setProducts(
+        items.filter(p =>
+          p.name.toLowerCase().includes(q.toLowerCase()) ||
+          p.category.toLowerCase().includes(q.toLowerCase()) ||
+          p.code.toLowerCase().includes(q.toLowerCase())
+        )
+      );
+    });
   };
 
   const onChange = (e) => {
@@ -80,88 +92,55 @@ export default function AdminPanel() {
 
   const startEdit = (p) => {
     const n = normalize(p);
-    setEditing(n.code || p.codigo || ""); 
+    setEditing(n.id);
     setForm({
+      id: n.id,
       code: n.code,
       name: n.name,
-      priceCLP: n.priceCLP || "",
+      priceCLP: n.priceCLP,
       category: n.category,
       image: n.image,
       description: n.description,
-      stock: n.stock || "",
-      onOffer: !!n.onOffer,
-      offerPriceCLP: n.offerPriceCLP || "",
+      stock: n.stock,
+      onOffer: n.onOffer,
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const onSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
 
     const payload = {
-
-      code: form.code || undefined,
-      codigo: form.code || undefined,
-
-      name: (form.name || "").trim(),
-      nombre: (form.name || "").trim(),
-
-      priceCLP: Number(form.priceCLP || 0),
-      precio: Number(form.priceCLP || 0),
-
-      category: (form.category || "").trim(),
-      categoria: (form.category || "").trim(),
-
-      image: (form.image || "").trim(),
-      imagen: (form.image || "").trim(),
-
-      description: (form.description || "").trim(),
-      descripcion: (form.description || "").trim(),
-
-      stock: Number(form.stock || 0),
-
-      onOffer: !!form.onOffer,
-      destacado: !!form.onOffer, // compat
-      offerPriceCLP: form.onOffer ? Number(form.offerPriceCLP || 0) : undefined,
-      precioOferta: form.onOffer ? Number(form.offerPriceCLP || 0) : undefined,
+      codigo: form.code,
+      nombre: form.name,
+      precio: Number(form.priceCLP),
+      categoria: form.category,
+      imagen: form.image,
+      descripcion: form.description,
+      stock: Number(form.stock),
+      destacado: form.onOffer,
     };
-
-    if (!payload.nombre) {
-      alert("❌ Falta nombre");
-      return;
-    }
-    if (!payload.categoria) {
-      alert("❌ Falta categoría");
-      return;
-    }
-    if (payload.precio <= 0) {
-      alert("❌ El precio debe ser mayor a 0");
-      return;
-    }
-    if (form.onOffer && payload.precioOferta >= payload.precio) {
-      alert("❌ El precio de oferta debe ser menor al precio normal");
-      return;
-    }
 
     try {
       if (editing) {
-        updateProduct(editing, payload);
+        await actualizarProducto(editing, payload);
       } else {
-        createProduct(payload);
+        await crearProducto(payload);
       }
+
       refresh();
       setForm(EMPTY);
       setEditing(null);
       alert("✅ Guardado");
+      
     } catch (err) {
-      alert("❌ " + err.message);
+      alert("❌ Error: " + err.message);
     }
   };
-  // ⬆️ ⬆️ FIN PATCH SUBMIT ⬆️ ⬆️
 
-  const onDelete = (code) => {
-    if (confirm(`¿Eliminar producto ${code}?`)) {
-      deleteProduct(code);
+  const onDelete = async (id) => {
+    if (confirm("¿Eliminar producto?")) {
+      await eliminarProducto(id);
       refresh();
     }
   };
@@ -187,8 +166,8 @@ export default function AdminPanel() {
 
       {/* FORMULARIO */}
       <form onSubmit={onSubmit} className="review-form" style={{ marginTop: "1rem" }}>
-        <div className="label">Código (opcional)</div>
-        <input name="code" value={form.code} onChange={onChange} placeholder="Ej: JM010" className="form-input" />
+        <div className="label">Código</div>
+        <input name="code" value={form.code} onChange={onChange} className="form-input" />
 
         <div className="label">Nombre</div>
         <input name="name" value={form.name} onChange={onChange} required className="form-input" />
@@ -204,7 +183,6 @@ export default function AdminPanel() {
           onChange={onChange}
           required
           className="form-input"
-          placeholder="Ej: Juegos de Mesa"
         />
         <datalist id="cats">
           {cats.map((c) => (
@@ -226,13 +204,6 @@ export default function AdminPanel() {
           <span>En oferta</span>
         </label>
 
-        {form.onOffer && (
-          <>
-            <div className="label">Precio Oferta CLP</div>
-            <input type="number" name="offerPriceCLP" value={form.offerPriceCLP} onChange={onChange} className="form-input" />
-          </>
-        )}
-
         <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.8rem", flexWrap: "wrap" }}>
           <button className="btn" type="submit">{editing ? "💾 Guardar cambios" : "➕ Crear producto"}</button>
           {editing && (
@@ -249,19 +220,18 @@ export default function AdminPanel() {
           <p className="muted">Sin resultados…</p>
         ) : (
           products.map((p) => {
-            const price = p.onOffer && p.offerPriceCLP != null ? p.offerPriceCLP : p.priceCLP;
             return (
-              <div key={p.code || p.name} className="carrito-item" style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", gap: "1rem" }}>
+              <div key={p.id} className="carrito-item" style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", gap: "1rem" }}>
                 <img src={p.image || "https://via.placeholder.com/80x80?text=IMG"} alt={p.name} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }} />
                 <div style={{ textAlign: "left" }}>
                   <strong>{p.name}</strong> {p.code && <span className="muted">({p.code})</span>}
                   <div className="muted">{p.category}</div>
-                  <div>${fmtCLP(price)} CLP</div>
+                  <div>${fmtCLP(p.priceCLP)} CLP</div>
                   {p.onOffer && <div style={{ color: "#39FF14" }}>En oferta</div>}
                 </div>
                 <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
                   <button className="btn" onClick={() => startEdit(p)}>✏️ Editar</button>
-                  <button className="btn btn-secondary" onClick={() => onDelete(p.code)}>🗑️ Eliminar</button>
+                  <button className="btn btn-secondary" onClick={() => onDelete(p.id)}>🗑️ Eliminar</button>
                 </div>
               </div>
             );
