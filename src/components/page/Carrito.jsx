@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import carritoReal from '../Atoms/carritoReal';
 import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
-import { registrarBoleta } from "../../api/boletas";
+import { registrarBoleta } from '../../api/boletas';
 
 const Carrito = () => {
   const [items, setItems] = useState([]);
@@ -41,33 +41,51 @@ const Carrito = () => {
     }
   };
 
-  const handleComprar = () => {
+  const handleComprar = async () => {
     if (items.length === 0) {
       mostrarMensaje('El carrito está vacío', 'error');
       return;
     }
 
     const subtotal = carritoReal.calcularTotal();
+    const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
     const descuentoDuoc = userData?.descuentoDuoc || 0;
-    const descuentoLevel = gamification.getUserLevel(userData?.levelUpPoints || 0)?.discount || 0;
 
-    // Aplicar descuentos combinados
+    // Aplicar descuentos
     const totalConNivel = subtotal * (1 - descuentoLevel / 100);
-    const totalFinal = totalConNivel * (1 - descuentoDuoc / 100);
+    const totalFinal = Math.round(totalConNivel * (1 - descuentoDuoc / 100));
 
     const puntosGanados = Math.floor(totalFinal / 1000);
 
-    if (userData) {
+    try {
+      // Registrar boleta REAL en el backend
+      const boleta = await registrarBoleta({
+        emailUsuario: userData.email,
+        total: totalFinal,
+        detalles: items.map(item => ({
+          productoId: item.id,
+          nombre: item.nombre,
+          precio: item.precio,
+          cantidad: item.cantidad,
+          subtotal: item.precio * item.cantidad
+        }))
+      });
+
+      // Guardar puntos
       gamification.addPoints(userData.email, puntosGanados);
+
+      mostrarMensaje(`¡Compra realizada! Boleta #${boleta.id} generada 🎉 Ganaste ${puntosGanados} puntos`, 'success');
+
+      // Vaciar carrito
+      carritoReal.vaciar();
+      setItems([]);
+
+      setTimeout(() => navigate('/perfil'), 2000);
+
+    } catch (error) {
+      console.error(error);
+      mostrarMensaje('Hubo un error al generar la boleta', 'error');
     }
-
-    mostrarMensaje(`¡Compra realizada! Ganaste ${puntosGanados} puntos Level-Up`, 'success');
-    carritoReal.vaciar();
-    setItems([]);
-
-    setTimeout(() => {
-      navigate('/perfil');
-    }, 2000);
   };
 
   const continuarComprando = () => {
@@ -80,7 +98,9 @@ const Carrito = () => {
   const subtotal = carritoReal.calcularTotal();
   const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
   const descuentoDuoc = userData?.descuentoDuoc || 0;
-  const totalConDescuento = subtotal * (1 - descuentoLevel / 100) * (1 - descuentoDuoc / 100);
+  const totalConDescuento = Math.round(
+    subtotal * (1 - descuentoLevel / 100) * (1 - descuentoDuoc / 100)
+  );
   const descuento = subtotal - totalConDescuento;
 
   return (
@@ -88,6 +108,7 @@ const Carrito = () => {
       <section>
         <h2>🛒 Mi Carrito de Compras</h2>
 
+        {/* INFORMACIÓN DE USUARIO / DESCUENTOS */}
         {userData && (
           <div
             style={{
@@ -106,6 +127,7 @@ const Carrito = () => {
           </div>
         )}
 
+        {/* SI EL CARRITO ESTÁ VACÍO */}
         {items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
@@ -117,6 +139,7 @@ const Carrito = () => {
           </div>
         ) : (
           <>
+            {/* LISTADO DE PRODUCTOS */}
             <div className="carrito-items">
               {items.map((item) => (
                 <div
@@ -163,6 +186,7 @@ const Carrito = () => {
               ))}
             </div>
 
+            {/* RESUMEN FINAL */}
             <div
               style={{
                 marginTop: '2rem',
@@ -202,17 +226,5 @@ const Carrito = () => {
     </main>
   );
 };
-
-await registrarBoleta({
-  emailUsuario: userData.email,
-  total: totalFinal,
-  detalles: items.map(item => ({
-    productoId: item.id,
-    nombre: item.nombre,
-    precio: item.precio,
-    cantidad: item.cantidad,
-    subtotal: item.precio * item.cantidad
-  }))
-});
 
 export default Carrito;
