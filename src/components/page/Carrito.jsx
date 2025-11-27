@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import carritoReal from '../Atoms/carritoReal';
+
+import carritoReal from '../Atoms/carritoReal.js';
 import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
 import { registrarBoleta } from '../../api/boletas';
@@ -51,13 +52,11 @@ const Carrito = () => {
     const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
     const descuentoDuoc = userData?.descuentoDuoc || 0;
 
-    // Aplicar descuentos
     const totalConNivel = subtotal * (1 - descuentoLevel / 100);
     const totalFinal = Math.round(totalConNivel * (1 - descuentoDuoc / 100));
     const puntosGanados = Math.floor(totalFinal / 1000);
 
     try {
-      // Registrar boleta REAL en el backend
       const boleta = await registrarBoleta({
         emailUsuario: userData.email,
         total: totalFinal,
@@ -70,7 +69,6 @@ const Carrito = () => {
         }))
       });
 
-      // Guardar puntos del usuario
       gamification.addPoints(userData.email, puntosGanados);
 
       mostrarMensaje(
@@ -85,13 +83,10 @@ const Carrito = () => {
 
     } catch (err) {
       console.error("Error al comprar:", err);
-
-      // EXTRAER MENSAJE REAL DEL BACKEND
       const mensajeError =
         err.response?.data?.message ||
         err.response?.data ||
         "No se pudo completar la compra. Intenta nuevamente.";
-
       mostrarMensaje(mensajeError, "error");
     }
   };
@@ -116,7 +111,6 @@ const Carrito = () => {
       <section>
         <h2>🛒 Mi Carrito de Compras</h2>
 
-        {/* INFORMACIÓN DE USUARIO / DESCUENTOS */}
         {userData && (
           <div
             style={{
@@ -135,7 +129,6 @@ const Carrito = () => {
           </div>
         )}
 
-        {/* SI EL CARRITO ESTÁ VACÍO */}
         {items.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '3rem' }}>
             <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
@@ -147,11 +140,10 @@ const Carrito = () => {
           </div>
         ) : (
           <>
-            {/* LISTADO DE PRODUCTOS */}
             <div className="carrito-items">
               {items.map((item) => (
                 <div
-                  key={item.codigo}
+                  key={item.id}
                   className="carrito-item"
                   style={{
                     display: 'flex',
@@ -194,7 +186,6 @@ const Carrito = () => {
               ))}
             </div>
 
-            {/* RESUMEN FINAL */}
             <div
               style={{
                 marginTop: '2rem',
