@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import carritoReal from '../Atoms/carritoReal';
 import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
+import { registrarBoleta } from "../../api/boletas";
 
 const Carrito = () => {
   const [items, setItems] = useState([]);
@@ -201,5 +202,17 @@ const Carrito = () => {
     </main>
   );
 };
+
+await registrarBoleta({
+  emailUsuario: userData.email,
+  total: totalFinal,
+  detalles: items.map(item => ({
+    productoId: item.id,
+    nombre: item.nombre,
+    precio: item.precio,
+    cantidad: item.cantidad,
+    subtotal: item.precio * item.cantidad
+  }))
+});
 
 export default Carrito;
