@@ -16,3 +16,8 @@ export async function listarBoletas() {
   const res = await axios.get(API_URL);
   return res.data;
 }
+
+export async function obtenerBoletasUsuario(email) {
+  const res = await axios.get(`http://localhost:8081/api/boletas/usuario/${email}`);
+  return res.data;
+}
