@@ -13,7 +13,7 @@ export async function obtenerBoleta(id) {
 }
 
 export async function listarBoletas() {
-  const res = await axios.get(API_URL);
+  const res = await axios.get("http://localhost:8081/api/boletas");
   return res.data;
 }
 

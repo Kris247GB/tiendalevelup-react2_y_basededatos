@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from "react";
+
 import {
   obtenerProductos,
   crearProducto,
   actualizarProducto,
   eliminarProducto
-} from "../../api/productos"; // <-- nuevo
+} from "../../api/productos";
+
+import { listarBoletas } from "../../api/boletas";
 import { useNavigate } from "react-router-dom";
 
-// Normalizamos el producto del backend a lo que usa el front
+// Normalizamos producto de backend → frontend
 function normalize(p = {}) {
   return {
     id: p.id ?? "",
@@ -42,11 +45,16 @@ const EMPTY = {
 export default function AdminPanel() {
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
+
   const [products, setProducts] = useState([]);
   const [cats, setCats] = useState([]);
   const [q, setQ] = useState("");
+
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
+
+  // NUEVO: ventas del backend
+  const [ventas, setVentas] = useState([]);
 
   useEffect(() => {
     const ok = sessionStorage.getItem("isLoggedIn") === "true";
@@ -58,17 +66,23 @@ export default function AdminPanel() {
     }
 
     refresh();
+
+    // Cargar boletas para dashboard
+    listarBoletas()
+      .then((data) => setVentas(data))
+      .catch((err) => console.error("Error cargando ventas:", err));
+
   }, []);
 
   const refresh = () => {
     obtenerProductos().then(data => {
       const items = data.map(normalize);
 
-      // Generar categorías dinámicas desde los productos reales
+      // Categorías dinámicas según productos
       const categories = [...new Set(items.map(p => p.category).filter(Boolean))];
       setCats(categories);
 
-      // Filtrado básico por búsqueda
+      // Filtrado por búsqueda
       setProducts(
         items.filter(p =>
           p.name.toLowerCase().includes(q.toLowerCase()) ||
@@ -131,8 +145,8 @@ export default function AdminPanel() {
       refresh();
       setForm(EMPTY);
       setEditing(null);
-      alert("✅ Guardado");
-      
+      alert("✅ Guardado correctamente");
+
     } catch (err) {
       alert("❌ Error: " + err.message);
     }
@@ -149,6 +163,7 @@ export default function AdminPanel() {
 
   return (
     <main className="wrap" style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
+
       <h2>⚙️ Panel Admin — Productos</h2>
 
       {/* BUSCADOR */}
@@ -205,39 +220,101 @@ export default function AdminPanel() {
         </label>
 
         <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.8rem", flexWrap: "wrap" }}>
-          <button className="btn" type="submit">{editing ? "💾 Guardar cambios" : "➕ Crear producto"}</button>
+          <button className="btn" type="submit">
+            {editing ? "💾 Guardar cambios" : "➕ Crear producto"}
+          </button>
           {editing && (
-            <button className="btn btn-secondary" type="button" onClick={() => { setEditing(null); setForm(EMPTY); }}>
+            <button className="btn btn-secondary" type="button" onClick={() => {
+              setEditing(null);
+              setForm(EMPTY);
+            }}>
               Cancelar
             </button>
           )}
         </div>
       </form>
 
-      {/* LISTADO */}
+      {/* LISTADO DE PRODUCTOS */}
       <div className="carrito-items" style={{ marginTop: "2rem" }}>
         {products.length === 0 ? (
           <p className="muted">Sin resultados…</p>
         ) : (
-          products.map((p) => {
-            return (
-              <div key={p.id} className="carrito-item" style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", gap: "1rem" }}>
-                <img src={p.image || "https://via.placeholder.com/80x80?text=IMG"} alt={p.name} style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }} />
-                <div style={{ textAlign: "left" }}>
-                  <strong>{p.name}</strong> {p.code && <span className="muted">({p.code})</span>}
-                  <div className="muted">{p.category}</div>
-                  <div>${fmtCLP(p.priceCLP)} CLP</div>
-                  {p.onOffer && <div style={{ color: "#39FF14" }}>En oferta</div>}
-                </div>
-                <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
-                  <button className="btn" onClick={() => startEdit(p)}>✏️ Editar</button>
-                  <button className="btn btn-secondary" onClick={() => onDelete(p.id)}>🗑️ Eliminar</button>
-                </div>
+          products.map((p) => (
+            <div key={p.id} className="carrito-item"
+              style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", gap: "1rem" }}>
+              <img
+                src={p.image || "https://via.placeholder.com/80?text=IMG"}
+                alt={p.name}
+                style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
+              />
+              <div style={{ textAlign: "left" }}>
+                <strong>{p.name}</strong> {p.code && <span className="muted">({p.code})</span>}
+                <div className="muted">{p.category}</div>
+                <div>${fmtCLP(p.priceCLP)} CLP</div>
+                {p.onOffer && <div style={{ color: "#39FF14" }}>En oferta</div>}
               </div>
-            );
-          })
+              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+                <button className="btn" onClick={() => startEdit(p)}>✏️ Editar</button>
+                <button className="btn btn-secondary" onClick={() => onDelete(p.id)}>🗑️ Eliminar</button>
+              </div>
+            </div>
+          ))
         )}
       </div>
+
+      {/* DASHBOARD DE VENTAS */}
+      <h2 style={{ marginTop: "3rem" }}>📊 Ventas Registradas</h2>
+
+      <div style={{ marginTop: "1rem" }}>
+        {ventas.length === 0 ? (
+          <p className="muted">Aún no hay ventas registradas.</p>
+        ) : (
+          ventas.map((v) => (
+            <div
+              key={v.id}
+              style={{
+                background: "rgba(255,255,255,0.05)",
+                padding: "1.5rem",
+                borderRadius: "12px",
+                marginBottom: "1rem",
+                borderLeft: "4px solid #39FF14",
+              }}
+            >
+              <h3>🧾 Boleta #{v.id}</h3>
+
+              <p><strong>Cliente:</strong> {v.emailUsuario}</p>
+              <p><strong>Total:</strong> ${v.total.toLocaleString("es-CL")}</p>
+              <p><strong>Fecha:</strong> {v.fecha.replace("T", " a las ")}</p>
+
+              <details style={{ marginTop: "1rem" }}>
+                <summary style={{ cursor: "pointer", color: "#39FF14" }}>
+                  Ver detalles ▼
+                </summary>
+
+                <div style={{ marginTop: "1rem", paddingLeft: "1rem" }}>
+                  {v.detalles.map((d) => (
+                    <div
+                      key={d.id}
+                      style={{
+                        marginBottom: "1rem",
+                        padding: "0.8rem",
+                        background: "rgba(255,255,255,0.03)",
+                        borderRadius: "8px",
+                      }}
+                    >
+                      <p><strong>{d.nombre}</strong></p>
+                      <p>Precio: ${d.precio.toLocaleString("es-CL")}</p>
+                      <p>Cantidad: {d.cantidad}</p>
+                      <p>Subtotal: ${d.subtotal.toLocaleString("es-CL")}</p>
+                    </div>
+                  ))}
+                </div>
+              </details>
+            </div>
+          ))
+        )}
+      </div>
+
     </main>
   );
 }
