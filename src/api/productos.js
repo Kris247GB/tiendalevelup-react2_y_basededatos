@@ -37,3 +37,8 @@ export async function eliminarProducto(id) {
   const response = await axios.delete(`${API_URL}/${id}`);
   return response.data;
 }
+
+export async function obtenerCategorias() {
+  const res = await axios.get("http://localhost:8081/api/productos/categorias");
+  return res.data;
+}

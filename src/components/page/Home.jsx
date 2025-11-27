@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
-import { obtenerProductos } from '../../api/productos';
+import { obtenerProductos, obtenerCategorias } from '../../api/productos';
 
 const Home = () => {
   const [busqueda, setBusqueda] = useState('');
@@ -9,31 +9,35 @@ const Home = () => {
   const [precioFiltro, setPrecioFiltro] = useState('todos');
   const [carritoCount, setCarritoCount] = useState(0);
   const [productos, setProductos] = useState([]);
+  const [categorias, setCategorias] = useState([]);
 
-  // Cargar productos desde el backend
   useEffect(() => {
+    // Cargar productos
     obtenerProductos()
-      .then(data => {
-        setProductos(data);
-      })
-      .catch(() => {
-        console.error("Error cargando productos desde la API");
-      });
+      .then(setProductos)
+      .catch(() => console.error("Error cargando productos desde la API"));
 
-    if (typeof carrito !== 'undefined' && carrito.items) {
-      setCarritoCount(carrito.items.reduce((sum, item) => sum + item.cantidad, 0));
+    // Cargar categorías dinámicas
+    obtenerCategorias()
+      .then(setCategorias)
+      .catch(() => console.error("Error cargando categorías"));
+
+    // Carrito
+    if (carrito?.items) {
+      setCarritoCount(
+        carrito.items.reduce((sum, item) => sum + item.cantidad, 0)
+      );
     }
   }, []);
 
-  // Filtrado avanzado usando productos traídos del backend
   const filtrarProductos = () => {
     return productos.filter(producto => {
-      const coincideBusqueda = producto.nombre
-        .toLowerCase()
-        .includes(busqueda.toLowerCase());
+      const coincideBusqueda =
+        producto.nombre.toLowerCase().includes(busqueda.toLowerCase());
 
       const coincideCategoria =
-        categoriaFiltro === "todas" || producto.categoria === categoriaFiltro;
+        categoriaFiltro === "todas" ||
+        producto.categoria === categoriaFiltro;
 
       const coincidePrecio =
         precioFiltro === "todos" ||
@@ -46,21 +50,21 @@ const Home = () => {
   };
 
   const agregarAlCarrito = (producto) => {
-    if (typeof carrito !== 'undefined' && typeof carrito.agregar === 'function') {
+    if (carrito?.agregar) {
       carrito.agregar(producto);
-      setCarritoCount(carrito.items.reduce((sum, item) => sum + item.cantidad, 0));
-      if (typeof mostrarMensaje === 'function') {
-        mostrarMensaje('Producto agregado al carrito', 'success');
-      }
+      setCarritoCount(
+        carrito.items.reduce((sum, item) => sum + item.cantidad, 0)
+      );
+      mostrarMensaje?.("Producto agregado al carrito", "success");
     }
   };
 
-  const formatearPrecio = (precio) => {
-    return `$${precio.toLocaleString('es-CL')} CLP`;
-  };
+  const formatearPrecio = (precio) =>
+    `$${Number(precio).toLocaleString('es-CL')} CLP`;
 
   return (
     <main>
+
       <section id="inicio">
         <h2>Bienvenido a Level-Up Gamer</h2>
         <p>Tu tienda online gamer en Chile 🚀</p>
@@ -69,7 +73,6 @@ const Home = () => {
         </p>
       </section>
 
-      {/* CATÁLOGO */}
       <section id="catalogo">
         <h2>Nuestros Productos</h2>
 
@@ -82,6 +85,8 @@ const Home = () => {
           gap: '1rem',
           padding: '0 2rem'
         }}>
+
+          {/* BUSQUEDA */}
           <div>
             <label style={{ color: '#D3D3D3', marginBottom: '0.5rem', fontWeight: 600 }}>
               🔍 Buscar productos
@@ -107,20 +112,17 @@ const Home = () => {
               value={categoriaFiltro}
               onChange={(e) => setCategoriaFiltro(e.target.value)}
               style={{
-                width: '100%', padding: '0.8rem', borderRadius: '8px', background: '#1a1a1a',
+                width: '100%', padding: '0.8rem',
+                borderRadius: '8px', background: '#1a1a1a',
                 color: '#fff', border: '1px solid #222'
               }}
             >
               <option value="todas">Todas las categorías</option>
-              <option value="juegos-mesa">Juegos de Mesa</option>
-              <option value="accesorios">Accesorios</option>
-              <option value="consolas">Consolas</option>
-              <option value="computadores">Computadores Gamers</option>
-              <option value="sillas">Sillas Gamers</option>
-              <option value="mouse">Mouse</option>
-              <option value="mousepad">Mousepad</option>
-              <option value="poleras">Poleras Personalizadas</option>
-              <option value="polerones">Polerones Gamers</option>
+              {categorias.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
             </select>
           </div>
 
@@ -133,8 +135,8 @@ const Home = () => {
               value={precioFiltro}
               onChange={(e) => setPrecioFiltro(e.target.value)}
               style={{
-                width: '100%', padding: '0.8rem', borderRadius: '8px', background: '#1a1a1a',
-                color: '#fff', border: '1px solid #222'
+                width: '100%', padding: '0.8rem', borderRadius: '8px',
+                background: '#1a1a1a', color: '#fff', border: '1px solid #222'
               }}
             >
               <option value="todos">Todos los precios</option>
@@ -143,41 +145,25 @@ const Home = () => {
               <option value="alto">Más de $200.000</option>
             </select>
           </div>
+
         </div>
 
         {/* LISTA DE PRODUCTOS */}
         <div className="productos">
           {filtrarProductos().map(producto => (
-            <article
-              key={producto.id}
-              className="producto"
-              data-categoria={producto.categoria}
-              data-precio={producto.precio}
-            >
+            <article key={producto.id} className="producto">
+
               <img src={producto.imagen} alt={producto.nombre} />
               <h3>{producto.nombre}</h3>
               <p className="precio">{formatearPrecio(producto.precio)}</p>
               <p className="descripcion">{producto.descripcion}</p>
 
               {/* VER DETALLES */}
-              <Link
-                to={`/detalles/${producto.id}`}
-                className="btn-detalles"
-                style={{
-                  display: "inline-block",
-                  marginBottom: "0.5rem",
-                  padding: "0.5rem 1rem",
-                  background: "#1E90FF",
-                  color: "white",
-                  borderRadius: "6px",
-                  textDecoration: "none",
-                  fontWeight: "bold"
-                }}
-              >
+              <Link to={`/detalles/${producto.id}`} className="btn-detalles">
                 Ver detalles
               </Link>
 
-              {/* AGREGAR AL CARRITO */}
+              {/* AGREGAR */}
               <button
                 className="btn-agregar"
                 onClick={() => agregarAlCarrito(producto)}
@@ -189,8 +175,6 @@ const Home = () => {
         </div>
       </section>
 
-      {/* TU CONTENIDO ADICIONAL SE MANTIENE */}
-      {/* COMUNIDAD / CONTACTO / EVENTOS */}
     </main>
   );
 };
