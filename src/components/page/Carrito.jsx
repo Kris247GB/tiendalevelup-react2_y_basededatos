@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { carrito, gamification, mostrarMensaje } from '../Atoms/Validaciones';
+import carritoReal from '../Atoms/carritoReal';
+import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
 
 const Carrito = () => {
@@ -19,24 +20,21 @@ const Carrito = () => {
     const user = JSON.parse(sessionStorage.getItem('userData') || '{}');
     setUserData(user);
 
-    carrito.init();
-    setItems(carrito.items);
+    setItems(carritoReal.obtenerCarrito());
   }, [navigate]);
 
   const handleEliminar = (codigo) => {
-    carrito.eliminar(codigo);
-    setItems([...carrito.items]);
+    setItems(carritoReal.eliminar(codigo));
     mostrarMensaje('Producto eliminado del carrito', 'success');
   };
 
   const handleCantidad = (codigo, cantidad) => {
-    carrito.modificarCantidad(codigo, Number(cantidad));
-    setItems([...carrito.items]);
+    setItems(carritoReal.modificarCantidad(codigo, Number(cantidad)));
   };
 
   const handleVaciar = () => {
     if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
-      carrito.vaciar();
+      carritoReal.vaciar();
       setItems([]);
       mostrarMensaje('Carrito vaciado', 'success');
     }
@@ -48,15 +46,22 @@ const Carrito = () => {
       return;
     }
 
-    const total = carrito.aplicarDescuentos();
-    const puntosGanados = Math.floor(total / 1000);
+    const subtotal = carritoReal.calcularTotal();
+    const descuentoDuoc = userData?.descuentoDuoc || 0;
+    const descuentoLevel = gamification.getUserLevel(userData?.levelUpPoints || 0)?.discount || 0;
+
+    // Aplicar descuentos combinados
+    const totalConNivel = subtotal * (1 - descuentoLevel / 100);
+    const totalFinal = totalConNivel * (1 - descuentoDuoc / 100);
+
+    const puntosGanados = Math.floor(totalFinal / 1000);
 
     if (userData) {
       gamification.addPoints(userData.email, puntosGanados);
     }
 
     mostrarMensaje(`¡Compra realizada! Ganaste ${puntosGanados} puntos Level-Up`, 'success');
-    carrito.vaciar();
+    carritoReal.vaciar();
     setItems([]);
 
     setTimeout(() => {
@@ -65,16 +70,17 @@ const Carrito = () => {
   };
 
   const continuarComprando = () => {
-    navigate('/'); 
+    navigate('/');
     setTimeout(() => {
       scroller.scrollTo('catalogo', { duration: 500, smooth: true, offset: -100 });
     }, 300);
   };
 
-  const subtotal = carrito.calcularTotal();
-  const totalConDescuento = carrito.aplicarDescuentos();
+  const subtotal = carritoReal.calcularTotal();
+  const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
+  const descuentoDuoc = userData?.descuentoDuoc || 0;
+  const totalConDescuento = subtotal * (1 - descuentoLevel / 100) * (1 - descuentoDuoc / 100);
   const descuento = subtotal - totalConDescuento;
-  const userLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0) : null;
 
   return (
     <main className="wrap" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
@@ -91,10 +97,10 @@ const Carrito = () => {
               border: '1px solid #39FF14',
             }}
           >
-            <p><strong>Nivel:</strong> {userLevel?.name}</p>
-            <p><strong>Descuento por nivel:</strong> {userLevel?.discount}%</p>
+            <p><strong>Nivel:</strong> {gamification.getUserLevel(userData.levelUpPoints || 0)?.name}</p>
+            <p><strong>Descuento por nivel:</strong> {descuentoLevel}%</p>
             {userData.descuentoDuoc > 0 && (
-              <p><strong>Descuento DUOC:</strong> {userData.descuentoDuoc}%</p>
+              <p><strong>Descuento DUOC:</strong> {descuentoDuoc}%</p>
             )}
           </div>
         )}
@@ -104,7 +110,6 @@ const Carrito = () => {
             <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
               Tu carrito está vacío
             </p>
-            {/* Antes era <Link to="/" ...> */}
             <button className="btn" onClick={continuarComprando}>
               Ir a comprar
             </button>
@@ -167,11 +172,13 @@ const Carrito = () => {
             >
               <h3>Resumen de compra</h3>
               <p>Subtotal: ${subtotal.toLocaleString('es-CL')}</p>
+
               {descuento > 0 && (
                 <p style={{ color: '#39FF14' }}>
-                  Descuento: -${descuento.toLocaleString('es-CL')}
+                  Descuento total: -${descuento.toLocaleString('es-CL')}
                 </p>
               )}
+
               <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#39FF14' }}>
                 Total: ${totalConDescuento.toLocaleString('es-CL')}
               </p>
@@ -183,7 +190,6 @@ const Carrito = () => {
                 <button className="btn btn-secondary" onClick={handleVaciar}>
                   🗑️ Vaciar Carrito
                 </button>
-                {/* Antes era <Link to="/" ...> */}
                 <button className="btn btn-secondary" onClick={continuarComprando}>
                   ← Seguir comprando
                 </button>
