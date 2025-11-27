@@ -54,7 +54,6 @@ const Carrito = () => {
     // Aplicar descuentos
     const totalConNivel = subtotal * (1 - descuentoLevel / 100);
     const totalFinal = Math.round(totalConNivel * (1 - descuentoDuoc / 100));
-
     const puntosGanados = Math.floor(totalFinal / 1000);
 
     try {
@@ -71,20 +70,29 @@ const Carrito = () => {
         }))
       });
 
-      // Guardar puntos
+      // Guardar puntos del usuario
       gamification.addPoints(userData.email, puntosGanados);
 
-      mostrarMensaje(`¡Compra realizada! Boleta #${boleta.id} generada 🎉 Ganaste ${puntosGanados} puntos`, 'success');
+      mostrarMensaje(
+        `¡Compra realizada! Boleta #${boleta.id} generada 🎉 Ganaste ${puntosGanados} puntos`,
+        'success'
+      );
 
-      // Vaciar carrito
       carritoReal.vaciar();
       setItems([]);
 
       setTimeout(() => navigate('/perfil'), 2000);
 
-    } catch (error) {
-      console.error(error);
-      mostrarMensaje('Hubo un error al generar la boleta', 'error');
+    } catch (err) {
+      console.error("Error al comprar:", err);
+
+      // EXTRAER MENSAJE REAL DEL BACKEND
+      const mensajeError =
+        err.response?.data?.message ||
+        err.response?.data ||
+        "No se pudo completar la compra. Intenta nuevamente.";
+
+      mostrarMensaje(mensajeError, "error");
     }
   };
 
