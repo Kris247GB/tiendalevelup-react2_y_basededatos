@@ -1,6 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
+
+// ❌ eliminar carrito viejo
+// import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
+
+// ✔ usar carritoReal
+import { agregarProductoCarrito, obtenerCarritoReal } from '../Atoms/carritoReal';
+import { mostrarMensaje } from '../Atoms/Validaciones';
+
 import { obtenerProductos, obtenerCategorias } from '../../api/productos';
 
 const Home = () => {
@@ -22,10 +29,11 @@ const Home = () => {
       .then(setCategorias)
       .catch(() => console.error("Error cargando categorías"));
 
-    // Carrito
-    if (carrito?.items) {
+    // ✔ obtener carritoReal
+    const carrito = obtenerCarritoReal();
+    if (Array.isArray(carrito)) {
       setCarritoCount(
-        carrito.items.reduce((sum, item) => sum + item.cantidad, 0)
+        carrito.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0)
       );
     }
   }, []);
@@ -49,14 +57,17 @@ const Home = () => {
     });
   };
 
+  // 🟢 Nuevo agregar al carrito usando carritoReal
   const agregarAlCarrito = (producto) => {
-    if (carrito?.agregar) {
-      carrito.agregar(producto);
-      setCarritoCount(
-        carrito.items.reduce((sum, item) => sum + item.cantidad, 0)
-      );
-      mostrarMensaje?.("Producto agregado al carrito", "success");
-    }
+    agregarProductoCarrito(producto);
+
+    // actualizar contador local
+    const carritoActual = obtenerCarritoReal();
+    setCarritoCount(
+      carritoActual.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0)
+    );
+
+    mostrarMensaje("Producto agregado al carrito", "success");
   };
 
   const formatearPrecio = (precio) =>
@@ -158,12 +169,10 @@ const Home = () => {
               <p className="precio">{formatearPrecio(producto.precio)}</p>
               <p className="descripcion">{producto.descripcion}</p>
 
-              {/* VER DETALLES */}
               <Link to={`/detalles/${producto.id}`} className="btn-detalles">
                 Ver detalles
               </Link>
 
-              {/* AGREGAR */}
               <button
                 className="btn-agregar"
                 onClick={() => agregarAlCarrito(producto)}
