@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { scroller } from 'react-scroll';
-import { carrito, mostrarMensaje } from '../Atoms/Validaciones'; // ⬅️ importa carrito
+
+// ⬅️ Importamos el carrito correcto (carritoReal)
+import { obtenerCarritoReal } from '../Atoms/carritoReal';
+import { mostrarMensaje } from '../Atoms/Validaciones';
 
 const Header = () => {
   const [carritoCount, setCarritoCount] = useState(0);
@@ -9,11 +12,12 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
+  // 🔥 Actualizar carrito + sesión
   useEffect(() => {
     const actualizarCarrito = () => {
- 
-      if (carrito && Array.isArray(carrito.items)) {
-        const total = carrito.items.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+      const carrito = obtenerCarritoReal();
+      if (Array.isArray(carrito)) {
+        const total = carrito.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
         setCarritoCount(total);
       } else {
         setCarritoCount(0);
@@ -28,6 +32,7 @@ const Header = () => {
     actualizarCarrito();
     verificarSesion();
 
+    // Actualización ligera — solo cada 1 segundo
     const interval = setInterval(() => {
       actualizarCarrito();
       verificarSesion();
@@ -36,6 +41,7 @@ const Header = () => {
     return () => clearInterval(interval);
   }, [location]);
 
+  // Scroll interno
   const go = (anchor) => {
     const opts = { duration: 500, smooth: true, offset: -80 };
     if (location.pathname !== '/') {
@@ -46,6 +52,7 @@ const Header = () => {
     }
   };
 
+  // Comportamiento del carro si no está logeado
   const handleCarritoClick = (e) => {
     if (!isLoggedIn) {
       e.preventDefault();
@@ -66,21 +73,18 @@ const Header = () => {
 
       <nav>
         <ul>
-          {/* Scroll interno */}
           <li><button className="linklike" onClick={() => go('inicio')}>Inicio</button></li>
           <li><button className="linklike" onClick={() => go('catalogo')}>Catálogo</button></li>
           <li><button className="linklike" onClick={() => go('comunidad')}>Comunidad</button></li>
           <li><button className="linklike" onClick={() => go('eventos')}>Eventos</button></li>
           <li><button className="linklike" onClick={() => go('contacto')}>Contacto</button></li>
 
-          {/* Rutas reales */}
           {isLoggedIn ? (
             <li><RouterLink to="/perfil">Mi Perfil</RouterLink></li>
           ) : (
             <li><RouterLink to="/login">Login</RouterLink></li>
           )}
 
-          {/* Enlace Admin (solo si es admin) */}
           {isAdmin && (
             <li><RouterLink to="/admin">Admin</RouterLink></li>
           )}
