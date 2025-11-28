@@ -1,7 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 
-import carritoReal from '../Atoms/carritoReal.js';
+import {
+  obtenerCarrito,
+  eliminar,
+  modificarCantidad,
+  vaciar,
+  calcularTotal
+} from '../Atoms/carritoReal';
+
 import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
 import { registrarBoleta } from '../../api/boletas';
@@ -22,21 +29,23 @@ const Carrito = () => {
     const user = JSON.parse(sessionStorage.getItem('userData') || '{}');
     setUserData(user);
 
-    setItems(carritoReal.obtenerCarrito());
+    setItems(obtenerCarrito());
   }, [navigate]);
 
   const handleEliminar = (codigo) => {
-    setItems(carritoReal.eliminar(codigo));
+    const nuevo = eliminar(codigo);
+    setItems(nuevo);
     mostrarMensaje('Producto eliminado del carrito', 'success');
   };
 
   const handleCantidad = (codigo, cantidad) => {
-    setItems(carritoReal.modificarCantidad(codigo, Number(cantidad)));
+    const nuevo = modificarCantidad(codigo, Number(cantidad));
+    setItems(nuevo);
   };
 
   const handleVaciar = () => {
     if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
-      carritoReal.vaciar();
+      vaciar();
       setItems([]);
       mostrarMensaje('Carrito vaciado', 'success');
     }
@@ -48,7 +57,7 @@ const Carrito = () => {
       return;
     }
 
-    const subtotal = carritoReal.calcularTotal();
+    const subtotal = calcularTotal();
     const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
     const descuentoDuoc = userData?.descuentoDuoc || 0;
 
@@ -76,7 +85,7 @@ const Carrito = () => {
         'success'
       );
 
-      carritoReal.vaciar();
+      vaciar();
       setItems([]);
 
       setTimeout(() => navigate('/perfil'), 2000);
@@ -98,7 +107,7 @@ const Carrito = () => {
     }, 300);
   };
 
-  const subtotal = carritoReal.calcularTotal();
+  const subtotal = calcularTotal();
   const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
   const descuentoDuoc = userData?.descuentoDuoc || 0;
   const totalConDescuento = Math.round(
