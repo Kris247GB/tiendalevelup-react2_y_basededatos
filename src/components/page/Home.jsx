@@ -5,7 +5,7 @@ import { Link } from 'react-router-dom';
 // import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
 
 // ✔ usar carritoReal
-import { agregarProductoCarrito, obtenerCarritoReal } from '../Atoms/carritoReal';
+import { agregar, obtenerCarritoReal } from '../Atoms/carritoReal';
 import { mostrarMensaje } from '../Atoms/Validaciones';
 
 import { obtenerProductos, obtenerCategorias } from '../../api/productos';
@@ -59,7 +59,7 @@ const Home = () => {
 
   // 🟢 Nuevo agregar al carrito usando carritoReal
   const agregarAlCarrito = (producto) => {
-    agregarProductoCarrito(producto);
+    agregar(producto);
 
     // actualizar contador local
     const carritoActual = obtenerCarritoReal();
