@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// ❌ eliminar carrito viejo
-// import { carrito, mostrarMensaje } from '../Atoms/Validaciones';
-
-// ✔ usar carritoReal
-import { agregar, obtenerCarritoReal } from '../Atoms/carritoReal';
+// ✔ usar carritoReal correctamente
+import { agregar, obtenerCarrito } from '../Atoms/carritoReal';
 import { mostrarMensaje } from '../Atoms/Validaciones';
 
 import { obtenerProductos, obtenerCategorias } from '../../api/productos';
@@ -30,7 +27,7 @@ const Home = () => {
       .catch(() => console.error("Error cargando categorías"));
 
     // ✔ obtener carritoReal
-    const carrito = obtenerCarritoReal();
+    const carrito = obtenerCarrito();
     if (Array.isArray(carrito)) {
       setCarritoCount(
         carrito.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0)
@@ -62,7 +59,7 @@ const Home = () => {
     agregar(producto);
 
     // actualizar contador local
-    const carritoActual = obtenerCarritoReal();
+    const carritoActual = obtenerCarrito();
     setCarritoCount(
       carritoActual.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0)
     );
