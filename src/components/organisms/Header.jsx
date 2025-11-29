@@ -2,8 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Link as RouterLink, useLocation, useNavigate } from 'react-router-dom';
 import { scroller } from 'react-scroll';
 
-// ⬅️ Importamos el carrito correcto (carritoReal)
-import { obtenerCarritoReal } from '../Atoms/carritoReal';
+// ✔ Importación correcta
+import { obtenerCarrito } from '../Atoms/carritoReal';
 import { mostrarMensaje } from '../Atoms/Validaciones';
 
 const Header = () => {
@@ -12,12 +12,14 @@ const Header = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  // 🔥 Actualizar carrito + sesión
   useEffect(() => {
     const actualizarCarrito = () => {
-      const carrito = obtenerCarritoReal();
+      const carrito = obtenerCarrito(); // ✔ corregido
       if (Array.isArray(carrito)) {
-        const total = carrito.reduce((sum, item) => sum + (Number(item.cantidad) || 0), 0);
+        const total = carrito.reduce(
+          (sum, item) => sum + (Number(item.cantidad) || 0),
+          0
+        );
         setCarritoCount(total);
       } else {
         setCarritoCount(0);
@@ -32,7 +34,6 @@ const Header = () => {
     actualizarCarrito();
     verificarSesion();
 
-    // Actualización ligera — solo cada 1 segundo
     const interval = setInterval(() => {
       actualizarCarrito();
       verificarSesion();
@@ -41,7 +42,6 @@ const Header = () => {
     return () => clearInterval(interval);
   }, [location]);
 
-  // Scroll interno
   const go = (anchor) => {
     const opts = { duration: 500, smooth: true, offset: -80 };
     if (location.pathname !== '/') {
@@ -52,18 +52,21 @@ const Header = () => {
     }
   };
 
-  // Comportamiento del carro si no está logeado
   const handleCarritoClick = (e) => {
     if (!isLoggedIn) {
       e.preventDefault();
-      mostrarMensaje('Debes iniciar sesión para ver el carrito', 'error');
+      mostrarMensaje(
+        'Debes iniciar sesión para ver el carrito',
+        'error'
+      );
       setTimeout(() => {
         navigate('/login');
       }, 1500);
     }
   };
 
-  const isAdmin = isLoggedIn && sessionStorage.getItem('isAdmin') === 'true';
+  const isAdmin =
+    isLoggedIn && sessionStorage.getItem('isAdmin') === 'true';
 
   return (
     <header>
@@ -73,20 +76,46 @@ const Header = () => {
 
       <nav>
         <ul>
-          <li><button className="linklike" onClick={() => go('inicio')}>Inicio</button></li>
-          <li><button className="linklike" onClick={() => go('catalogo')}>Catálogo</button></li>
-          <li><button className="linklike" onClick={() => go('comunidad')}>Comunidad</button></li>
-          <li><button className="linklike" onClick={() => go('eventos')}>Eventos</button></li>
-          <li><button className="linklike" onClick={() => go('contacto')}>Contacto</button></li>
+          <li>
+            <button className="linklike" onClick={() => go('inicio')}>
+              Inicio
+            </button>
+          </li>
+          <li>
+            <button className="linklike" onClick={() => go('catalogo')}>
+              Catálogo
+            </button>
+          </li>
+          <li>
+            <button className="linklike" onClick={() => go('comunidad')}>
+              Comunidad
+            </button>
+          </li>
+          <li>
+            <button className="linklike" onClick={() => go('eventos')}>
+              Eventos
+            </button>
+          </li>
+          <li>
+            <button className="linklike" onClick={() => go('contacto')}>
+              Contacto
+            </button>
+          </li>
 
           {isLoggedIn ? (
-            <li><RouterLink to="/perfil">Mi Perfil</RouterLink></li>
+            <li>
+              <RouterLink to="/perfil">Mi Perfil</RouterLink>
+            </li>
           ) : (
-            <li><RouterLink to="/login">Login</RouterLink></li>
+            <li>
+              <RouterLink to="/login">Login</RouterLink>
+            </li>
           )}
 
           {isAdmin && (
-            <li><RouterLink to="/admin">Admin</RouterLink></li>
+            <li>
+              <RouterLink to="/admin">Admin</RouterLink>
+            </li>
           )}
 
           <li>
