@@ -4,28 +4,29 @@ import { obtenerProductoPorId } from "../../api/productos";
 import carritoReal from "../Atoms/carritoReal";
 import { mostrarMensaje } from "../Atoms/Validaciones";
 
+const API_URL = "http://localhost:8081/api"; // 🔥 URL del backend correcta
+
 const Detalles = () => {
-  const { id } = useParams(); 
+  const { id } = useParams();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
-  const [comentarios, setComentarios] = useState([]);  // Estado para los comentarios
+  const [comentarios, setComentarios] = useState([]);
 
-  // Cargar producto del backend
+  // Cargar producto
   useEffect(() => {
     obtenerProductoPorId(id)
-      .then((data) => {
-        setProducto(data);
-      })
-      .catch((err) => {
-        console.error("Error al cargar producto:", err);
-      })
+      .then((data) => setProducto(data))
+      .catch((err) => console.error("Error al cargar producto:", err))
       .finally(() => setLoading(false));
 
-    // Obtener los comentarios del producto
-    fetch(`/api/productos/${id}/comentarios`)
-      .then((res) => res.json())
+    // Cargar comentarios del backend
+    fetch(`${API_URL}/productos/${id}/comentarios`)
+      .then((res) => {
+        if (!res.ok) throw new Error("No se pudieron cargar comentarios");
+        return res.json();
+      })
       .then((data) => setComentarios(data))
       .catch((err) => console.error("Error al cargar comentarios:", err));
   }, [id]);
@@ -45,7 +46,7 @@ const Detalles = () => {
     mostrarMensaje("Producto agregado al carrito", "success");
   };
 
-  // Enviar reseña (mock)
+  // Enviar reseña
   const handleSubmitReview = (e) => {
     e.preventDefault();
 
@@ -55,21 +56,24 @@ const Detalles = () => {
     }
 
     const comentario = {
-      productoId: producto.id,
       rating: rating,
       texto: reviewText,
     };
 
-    // Enviar comentario al backend
-    fetch(`/api/productos/${producto.id}/comentarios`, {
+    fetch(`${API_URL}/productos/${producto.id}/comentarios`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(comentario),
     })
-      .then((res) => res.json())
+      .then(async (res) => {
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(errText);
+        }
+        return res.json();
+      })
       .then((data) => {
-        // Actualiza la lista de comentarios
-        setComentarios((prevComentarios) => [...prevComentarios, data]);
+        setComentarios((prev) => [...prev, data]);
         setRating(0);
         setReviewText("");
         alert("¡Gracias por tu reseña!");
@@ -77,69 +81,40 @@ const Detalles = () => {
       .catch((err) => console.error("Error al enviar la reseña:", err));
   };
 
-  // Estado de carga
-  if (loading) {
-    return (
-      <p style={{ textAlign: "center", marginTop: "2rem", color: "white" }}>
-        Cargando producto...
-      </p>
-    );
-  }
+  if (loading) return <p style={{ textAlign: "center", color: "white" }}>Cargando…</p>;
 
-  // Producto no encontrado
-  if (!producto) {
-    return (
-      <p style={{ textAlign: "center", marginTop: "2rem", color: "red" }}>
-        Producto no encontrado
-      </p>
-    );
-  }
+  if (!producto)
+    return <p style={{ textAlign: "center", color: "red" }}>Producto no encontrado</p>;
 
   return (
     <div style={{ width: "100%", minHeight: "100vh" }}>
       <main className="detalle-producto">
-        {/* IMAGEN */}
+
         <div className="imagen">
           <img src={producto.imagen} alt={producto.nombre} />
         </div>
 
-        {/* INFORMACIÓN */}
         <div className="info">
           <h2>{producto.nombre}</h2>
           <p className="precio">
             ${producto.precio.toLocaleString("es-CL")} CLP
           </p>
-          <p>{producto.descripcion}</p>
-
-          <ul>
-            <li><strong>Categoría:</strong> {producto.categoria}</li>
-            <li><strong>Stock disponible:</strong> {producto.stock}</li>
-            {producto.destacado && (
-              <li style={{ color: "#39FF14" }}>🔥 Producto destacado</li>
-            )}
-          </ul>
 
           <div className="acciones">
-            <button 
-              className="btn-agregar"
-              onClick={agregarAlCarrito}
-              type="button"
-            >
+            <button className="btn-agregar" onClick={agregarAlCarrito}>
               Agregar al carrito
             </button>
-
             <Link to="/#catalogo" className="btn-volver">
               ← Volver al catálogo
             </Link>
           </div>
         </div>
 
-        {/* RESEÑAS */}
         <section id="reviews" className="reviews-card">
           <h2>Reseñas</h2>
 
           <form className="review-form" onSubmit={handleSubmitReview}>
-            <label className="label">Tu calificación</label>
+            <label>Tu calificación</label>
 
             <div className="star-input">
               {[5, 4, 3, 2, 1].map((star) => (
@@ -160,7 +135,6 @@ const Detalles = () => {
             <textarea
               className="review-text"
               placeholder="Escribe tu reseña"
-              maxLength={600}
               value={reviewText}
               onChange={(e) => setReviewText(e.target.value)}
             />
@@ -170,19 +144,18 @@ const Detalles = () => {
             </button>
           </form>
 
-          {/* Mostrar los comentarios existentes */}
           <ul className="reviews-list">
             {comentarios.length === 0 ? (
               <p>No hay reseñas aún.</p>
             ) : (
-              comentarios.map((comentario, index) => (
+              comentarios.map((c, index) => (
                 <li className="review-item" key={index}>
                   <div className="review-head">
-                    <span className="stars" style={{ "--value": comentario.rating }} />
+                    <span className="stars" style={{ "--value": c.rating }} />
                     <strong className="user">Usuario</strong>
-                    <time className="date">{comentario.fecha}</time>
+                    <time className="date">{c.fecha || "Fecha no disponible"}</time>
                   </div>
-                  <p className="review-body">{comentario.texto}</p>
+                  <p className="review-body">{c.texto}</p>
                 </li>
               ))
             )}
