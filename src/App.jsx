@@ -11,6 +11,7 @@ import Carrito from './components/page/Carrito';
 import Perfil from './components/page/Perfil';
 import Detalles from './components/page/Detalles';
 import AdminPanel from './components/admin/AdminPanel';
+import Comunidad from "./components/page/Comunidad";
 
 function App() {
   return (
@@ -29,6 +30,8 @@ function App() {
           <Route path="/detalles/:id" element={<Detalles />} />
 
           <Route path="/admin" element={<AdminPanel />} />
+          <Route path="/comunidad" element={<Comunidad />} />
+
         </Routes>
 
         <Footer />
