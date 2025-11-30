@@ -5,7 +5,7 @@ import carritoReal from "../Atoms/carritoReal";
 import { mostrarMensaje } from "../Atoms/Validaciones";
 
 const Detalles = () => {
-  const { id } = useParams(); // ID desde la URL
+  const { id } = useParams(); 
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
