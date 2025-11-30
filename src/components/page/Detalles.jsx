@@ -10,6 +10,7 @@ const Detalles = () => {
   const [loading, setLoading] = useState(true);
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
+  const [comentarios, setComentarios] = useState([]);  // Estado para los comentarios
 
   // Cargar producto del backend
   useEffect(() => {
@@ -21,6 +22,12 @@ const Detalles = () => {
         console.error("Error al cargar producto:", err);
       })
       .finally(() => setLoading(false));
+
+    // Obtener los comentarios del producto
+    fetch(`/api/productos/${id}/comentarios`)
+      .then((res) => res.json())
+      .then((data) => setComentarios(data))
+      .catch((err) => console.error("Error al cargar comentarios:", err));
   }, [id]);
 
   // Agregar al carrito REAL
@@ -47,9 +54,27 @@ const Detalles = () => {
       return;
     }
 
-    alert("¡Gracias por tu reseña!");
-    setRating(0);
-    setReviewText("");
+    const comentario = {
+      productoId: producto.id,
+      rating: rating,
+      texto: reviewText,
+    };
+
+    // Enviar comentario al backend
+    fetch(`/api/productos/${producto.id}/comentarios`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(comentario),
+    })
+      .then((res) => res.json())
+      .then((data) => {
+        // Actualiza la lista de comentarios
+        setComentarios((prevComentarios) => [...prevComentarios, data]);
+        setRating(0);
+        setReviewText("");
+        alert("¡Gracias por tu reseña!");
+      })
+      .catch((err) => console.error("Error al enviar la reseña:", err));
   };
 
   // Estado de carga
@@ -145,16 +170,22 @@ const Detalles = () => {
             </button>
           </form>
 
-          {/* Reseñas mock */}
+          {/* Mostrar los comentarios existentes */}
           <ul className="reviews-list">
-            <li className="review-item">
-              <div className="review-head">
-                <span className="stars" style={{ "--value": 5 }} />
-                <strong className="user">Camila R.</strong>
-                <time className="date">28/08/2025</time>
-              </div>
-              <p className="review-body">Excelente producto.</p>
-            </li>
+            {comentarios.length === 0 ? (
+              <p>No hay reseñas aún.</p>
+            ) : (
+              comentarios.map((comentario, index) => (
+                <li className="review-item" key={index}>
+                  <div className="review-head">
+                    <span className="stars" style={{ "--value": comentario.rating }} />
+                    <strong className="user">Usuario</strong>
+                    <time className="date">{comentario.fecha}</time>
+                  </div>
+                  <p className="review-body">{comentario.texto}</p>
+                </li>
+              ))
+            )}
           </ul>
         </section>
       </main>
