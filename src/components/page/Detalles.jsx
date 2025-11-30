@@ -4,37 +4,35 @@ import { obtenerProductoPorId } from "../../api/productos";
 import carritoReal from "../Atoms/carritoReal";
 import { mostrarMensaje } from "../Atoms/Validaciones";
 
-const API_URL = "http://localhost:8081/api"; // 🔥 URL del backend correcta
+const API_URL = "http://localhost:8081/api";
 
 const Detalles = () => {
   const { id } = useParams();
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
+
   const [rating, setRating] = useState(0);
   const [reviewText, setReviewText] = useState("");
   const [comentarios, setComentarios] = useState([]);
 
-  // Cargar producto
+  const [respuestaActiva, setRespuestaActiva] = useState(null);
+  const [textoRespuesta, setTextoRespuesta] = useState("");
+
+  // Cargar datos del producto + comentarios
   useEffect(() => {
     obtenerProductoPorId(id)
       .then((data) => setProducto(data))
       .catch((err) => console.error("Error al cargar producto:", err))
       .finally(() => setLoading(false));
 
-    // Cargar comentarios del backend
     fetch(`${API_URL}/productos/${id}/comentarios`)
-      .then((res) => {
-        if (!res.ok) throw new Error("No se pudieron cargar comentarios");
-        return res.json();
-      })
+      .then((res) => res.json())
       .then((data) => setComentarios(data))
       .catch((err) => console.error("Error al cargar comentarios:", err));
   }, [id]);
 
-  // Agregar al carrito REAL
+  // Agregar al carrito
   const agregarAlCarrito = () => {
-    if (!producto) return;
-
     carritoReal.agregar({
       id: producto.id,
       codigo: producto.codigo,
@@ -51,7 +49,7 @@ const Detalles = () => {
     e.preventDefault();
 
     if (!rating || !reviewText.trim()) {
-      alert("Por favor completa la calificación y escribe tu reseña");
+      alert("Completa la calificación y escribe tu reseña");
       return;
     }
 
@@ -65,54 +63,84 @@ const Detalles = () => {
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(comentario),
     })
-      .then(async (res) => {
-        if (!res.ok) {
-          const errText = await res.text();
-          throw new Error(errText);
-        }
-        return res.json();
-      })
-      .then((data) => {
-        setComentarios((prev) => [...prev, data]);
+      .then((res) => res.json())
+      .then((nuevoComentario) => {
+        setComentarios([...comentarios, nuevoComentario]);
         setRating(0);
         setReviewText("");
-        alert("¡Gracias por tu reseña!");
-      })
-      .catch((err) => console.error("Error al enviar la reseña:", err));
+      });
   };
 
-  if (loading) return <p style={{ textAlign: "center", color: "white" }}>Cargando…</p>;
+  // ❤️ LIKE
+  const darLike = (comentarioId) => {
+    fetch(`${API_URL}/productos/comentarios/${comentarioId}/like`, {
+      method: "POST",
+    })
+      .then((res) => res.json())
+      .then((comentarioActualizado) => {
+        setComentarios(
+          comentarios.map((c) =>
+            c.id === comentarioActualizado.id ? comentarioActualizado : c
+          )
+        );
+      });
+  };
 
-  if (!producto)
-    return <p style={{ textAlign: "center", color: "red" }}>Producto no encontrado</p>;
+  // 💬 RESPUESTA
+  const enviarRespuesta = (comentarioId) => {
+    if (!textoRespuesta.trim()) return;
+
+    fetch(`${API_URL}/productos/comentarios/${comentarioId}/respuesta`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(textoRespuesta),
+    })
+      .then((res) => res.json())
+      .then((comentarioActualizado) => {
+        setComentarios(
+          comentarios.map((c) =>
+            c.id === comentarioActualizado.id ? comentarioActualizado : c
+          )
+        );
+
+        setRespuestaActiva(null);
+        setTextoRespuesta("");
+      });
+  };
+
+  if (loading) return <p style={{ color: "white" }}>Cargando…</p>;
+  if (!producto) return <p style={{ color: "red" }}>Producto no encontrado</p>;
 
   return (
     <div style={{ width: "100%", minHeight: "100vh" }}>
       <main className="detalle-producto">
-
+        
+        {/* IMAGEN */}
         <div className="imagen">
           <img src={producto.imagen} alt={producto.nombre} />
         </div>
 
+        {/* INFO */}
         <div className="info">
           <h2>{producto.nombre}</h2>
           <p className="precio">
             ${producto.precio.toLocaleString("es-CL")} CLP
           </p>
 
-          <div className="acciones">
-            <button className="btn-agregar" onClick={agregarAlCarrito}>
-              Agregar al carrito
-            </button>
-            <Link to="/#catalogo" className="btn-volver">
-              ← Volver al catálogo
-            </Link>
-          </div>
+          <button className="btn-agregar" onClick={agregarAlCarrito}>
+            Agregar al carrito
+          </button>
+
+          <Link to="/#catalogo" className="btn-volver">
+            ← Volver al catálogo
+          </Link>
         </div>
 
+        {/* COMENTARIOS */}
         <section id="reviews" className="reviews-card">
           <h2>Reseñas</h2>
 
+          {/* FORMULARIO NUEVA RESEÑA */}
           <form className="review-form" onSubmit={handleSubmitReview}>
             <label>Tu calificación</label>
 
@@ -144,23 +172,70 @@ const Detalles = () => {
             </button>
           </form>
 
+          {/* LISTA DE COMENTARIOS */}
           <ul className="reviews-list">
             {comentarios.length === 0 ? (
               <p>No hay reseñas aún.</p>
             ) : (
-              comentarios.map((c, index) => (
-                <li className="review-item" key={index}>
+              comentarios.map((c) => (
+                <li className="review-item" key={c.id}>
+                  
                   <div className="review-head">
                     <span className="stars" style={{ "--value": c.rating }} />
                     <strong className="user">Usuario</strong>
-                    <time className="date">{c.fecha || "Fecha no disponible"}</time>
+                    <time className="date">{c.fecha}</time>
                   </div>
+
                   <p className="review-body">{c.texto}</p>
+
+                  {/* ❤️ LIKE */}
+                  <button
+                    className="btn-like"
+                    onClick={() => darLike(c.id)}
+                  >
+                    ❤️ {c.likes}
+                  </button>
+
+                  {/* 💬 RESPONDER */}
+                  <button
+                    className="btn-responder"
+                    onClick={() =>
+                      setRespuestaActiva(respuestaActiva === c.id ? null : c.id)
+                    }
+                  >
+                    💬 Responder
+                  </button>
+
+                  {/* FORMULARIO RESPUESTA */}
+                  {respuestaActiva === c.id && (
+                    <div className="respuesta-form">
+                      <textarea
+                        placeholder="Escribe una respuesta..."
+                        value={textoRespuesta}
+                        onChange={(e) => setTextoRespuesta(e.target.value)}
+                      />
+                      <button onClick={() => enviarRespuesta(c.id)}>
+                        Enviar respuesta
+                      </button>
+                    </div>
+                  )}
+
+                  {/* LISTA DE RESPUESTAS */}
+                  {c.respuestas.length > 0 && (
+                    <ul className="respuestas-list">
+                      {c.respuestas.map((r, idx) => (
+                        <li key={idx} className="respuesta-item">
+                          <p>↳ {r}</p>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
                 </li>
               ))
             )}
           </ul>
         </section>
+
       </main>
     </div>
   );
