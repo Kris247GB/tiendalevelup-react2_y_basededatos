@@ -13,6 +13,7 @@ import Detalles from './components/page/Detalles';
 import AdminPanel from './components/admin/AdminPanel';
 import Comunidad from "./components/page/Comunidad";
 import Eventos from './components/page/Eventos';
+import Contacto from "./components/page/Contacto";
 
 function App() {
   return (
@@ -33,6 +34,8 @@ function App() {
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/comunidad" element={<Comunidad />} />
           <Route path="/eventos" element={<Eventos />} />
+          <Route path="/contacto" element={<Contacto />} />
+
         </Routes>
 
         <Footer />

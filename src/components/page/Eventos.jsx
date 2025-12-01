@@ -6,11 +6,21 @@ const Eventos = () => {
   const [eventos, setEventos] = useState([]);
 
   useEffect(() => {
-    fetch(API_URL)
-      .then((r) => r.json())
-      .then((data) => setEventos(data))
-      .catch((err) => console.error("Error cargando eventos:", err));
-  }, []);
+  fetch(API_URL)
+    .then((r) => {
+      if (!r.ok) return []; // Si hay error 500 devolvemos lista vacía
+      return r.json();
+    })
+    .then((data) => {
+      if (Array.isArray(data)) {
+        setEventos(data);
+      } else {
+        setEventos([]); // evita .map() error
+      }
+    })
+    .catch(() => setEventos([]));
+}, []);
+
 
   return (
     <div style={{ padding: "2rem", color: "white", minHeight: "100vh" }}>
