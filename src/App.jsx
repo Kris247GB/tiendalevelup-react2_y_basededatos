@@ -12,6 +12,7 @@ import Perfil from './components/page/Perfil';
 import Detalles from './components/page/Detalles';
 import AdminPanel from './components/admin/AdminPanel';
 import Comunidad from "./components/page/Comunidad";
+import Eventos from './components/page/Eventos';
 
 function App() {
   return (
@@ -31,7 +32,7 @@ function App() {
 
           <Route path="/admin" element={<AdminPanel />} />
           <Route path="/comunidad" element={<Comunidad />} />
-
+          <Route path="/eventos" element={<Eventos />} />
         </Routes>
 
         <Footer />
