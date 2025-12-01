@@ -1,8 +1,8 @@
 import React from "react";
 
 const Contacto = () => {
-  const telefono = "+56912345678"; // cámbialo si quieres
-  const correo = "contacto@levelupgamer.cl"; // cámbialo si quieres
+  const telefono = "+56942611974"; // cámbialo si quieres
+  const correo = "crist.tapiap@duocuc.cl"; // cámbialo si quieres
 
   return (
     <div style={{ color: "white", padding: "2rem", minHeight: "100vh" }}>
@@ -82,7 +82,7 @@ const Contacto = () => {
           height="350"
           frameBorder="0"
           style={{ border: 0, borderRadius: "10px" }}
-          src="https://www.google.com/maps?q=Plaza%20de%20Armas%20Santiago&output=embed"
+          src="https://www.google.com/maps?q=Serrano+1105,+Melipilla&output=embed"
           allowFullScreen
         ></iframe>
       </div>

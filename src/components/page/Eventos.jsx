@@ -8,14 +8,14 @@ const Eventos = () => {
   useEffect(() => {
   fetch(API_URL)
     .then((r) => {
-      if (!r.ok) return []; // Si hay error 500 devolvemos lista vacía
+      if (!r.ok) return []; 
       return r.json();
     })
     .then((data) => {
       if (Array.isArray(data)) {
         setEventos(data);
       } else {
-        setEventos([]); // evita .map() error
+        setEventos([]); 
       }
     })
     .catch(() => setEventos([]));
