@@ -73,14 +73,14 @@ const Registro = () => {
       fechaRegistro: new Date().toISOString()
     };
 
-    // Si ingresó un código de referido válido, darle puntos
+    
     if (codigoReferido) {
       const referidor = usuarios.find(u => u.codigoReferido === codigoReferido.toUpperCase());
       if (referidor) {
-        nuevoUsuario.levelUpPoints = 50; // Puntos de bienvenida por usar código
-        referidor.levelUpPoints = (referidor.levelUpPoints || 0) + 100; // Puntos para quien refirió
+        nuevoUsuario.levelUpPoints = 50; 
+        referidor.levelUpPoints = (referidor.levelUpPoints || 0) + 100; 
         
-        // Actualizar el referidor en el array
+        
         const indexReferidor = usuarios.findIndex(u => u.codigoReferido === codigoReferido.toUpperCase());
         usuarios[indexReferidor] = referidor;
       }
@@ -91,14 +91,12 @@ const Registro = () => {
       nuevoUsuario.descuentoDuoc = 20; // 20% de descuento
     }
 
-    // Guardar usuario
     usuarios.push(nuevoUsuario);
     localStorage.setItem('usuarios', JSON.stringify(usuarios));
 
     setMessage('¡Cuenta creada exitosamente! Redirigiendo al login...');
     setMessageType('success');
 
-    // Usar la función de validaciones.js si está disponible
     if (typeof mostrarMensaje === 'function') {
       mostrarMensaje('¡Cuenta creada exitosamente!', 'success');
     }

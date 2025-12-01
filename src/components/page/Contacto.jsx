@@ -1,8 +1,8 @@
 import React from "react";
 
 const Contacto = () => {
-  const telefono = "+56942611974"; // cámbialo si quieres
-  const correo = "crist.tapiap@duocuc.cl"; // cámbialo si quieres
+  const telefono = "+56942611974"; 
+  const correo = "crist.tapiap@duocuc.cl"; 
 
   return (
     <div style={{ color: "white", padding: "2rem", minHeight: "100vh" }}>
@@ -23,7 +23,7 @@ const Contacto = () => {
         <h2>Información de Contacto</h2>
 
         <p>
-          📍 <strong>Dirección:</strong> Plaza de Armas, Santiago, Chile
+          📍 <strong>Dirección:</strong> Serrano 1105, DuocUC Melipilla, Chile
         </p>
 
         <p>

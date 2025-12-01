@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
-// ✔ usar carritoReal correctamente
 import { agregar, obtenerCarrito } from '../Atoms/carritoReal';
 import { mostrarMensaje } from '../Atoms/Validaciones';
 
@@ -21,12 +20,10 @@ const Home = () => {
       .then(setProductos)
       .catch(() => console.error("Error cargando productos desde la API"));
 
-    // Cargar categorías dinámicas
     obtenerCategorias()
       .then(setCategorias)
       .catch(() => console.error("Error cargando categorías"));
 
-    // ✔ obtener carritoReal
     const carrito = obtenerCarrito();
     if (Array.isArray(carrito)) {
       setCarritoCount(
@@ -54,7 +51,6 @@ const Home = () => {
     });
   };
 
-  // 🟢 Nuevo agregar al carrito usando carritoReal
   const agregarAlCarrito = (producto) => {
     agregar(producto);
 

@@ -8,12 +8,11 @@ const Comunidad = () => {
   const [posts, setPosts] = useState([]);
   const [nuevoComentario, setNuevoComentario] = useState({});
 
-  // 🔥 Cargar todos los posts + sus comentarios
   useEffect(() => {
     fetch(`${API_URL}/posts`)
       .then((r) => r.json())
       .then(async (data) => {
-        // cargar comentarios por cada post
+        
         const postsConComentarios = await Promise.all(
           data.map(async (post) => {
             const res = await fetch(`${API_URL}/posts/${post.id}/comentarios`);
@@ -27,7 +26,7 @@ const Comunidad = () => {
       .catch((err) => console.error("Error cargando posts:", err));
   }, []);
 
-  // 📝 Publicar nuevo post
+
   const enviarPost = () => {
     const user = sessionStorage.getItem("userName") || "Usuario Anónimo";
 
@@ -50,7 +49,7 @@ const Comunidad = () => {
       });
   };
 
-  // 💬 Comentar un post
+
   const comentarPost = (postId) => {
     const contenido = nuevoComentario[postId];
     const user = sessionStorage.getItem("userName") || "Usuario";
@@ -79,7 +78,6 @@ const Comunidad = () => {
       });
   };
 
-  // ❤️ Like comentario
   const likeComentario = (commentId, postId) => {
     fetch(`${API_URL}/comentarios/${commentId}/like`, { method: "POST" })
       .then((r) => r.json())
@@ -99,7 +97,6 @@ const Comunidad = () => {
       });
   };
 
-  // 💬 Responder a un comentario
   const responderComentario = (commentId, postId, texto) => {
     if (texto.trim() === "") return;
 
@@ -131,7 +128,7 @@ const Comunidad = () => {
         💬 Comunidad Gamer
       </h1>
 
-      {/* FORM NUEVO POST */}
+      {}
       <div className="post-creator" style={{ marginBottom: "2rem" }}>
         <input
           type="text"
@@ -173,7 +170,7 @@ const Comunidad = () => {
         </button>
       </div>
 
-      {/* POSTS */}
+      {}
       {posts.map((post) => (
         <div
           key={post.id}
@@ -220,7 +217,7 @@ const Comunidad = () => {
                 ❤️ {c.likes}
               </button>
 
-              {/* RESPUESTAS */}
+              {}
               {c.respuestas.map((r, index) => (
                 <div
                   key={index}
@@ -236,7 +233,7 @@ const Comunidad = () => {
                 </div>
               ))}
 
-              {/* FORM RESPUESTA */}
+              {}
               <input
                 type="text"
                 placeholder="Responder..."
@@ -256,7 +253,7 @@ const Comunidad = () => {
             </div>
           ))}
 
-          {/* NUEVO COMENTARIO */}
+          {}
           <textarea
             placeholder="Escribe un comentario..."
             value={nuevoComentario[post.id] || ""}

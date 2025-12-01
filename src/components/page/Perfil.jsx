@@ -4,7 +4,7 @@ import { gamification } from "../Atoms/Validaciones";
 
 const Perfil = () => {
   const [user, setUser] = useState(null);
-  const [boletas, setBoletas] = useState([]);  // Inicializamos como array vacío
+  const [boletas, setBoletas] = useState([]);  
 
   useEffect(() => {
     const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
@@ -14,7 +14,7 @@ const Perfil = () => {
       obtenerBoletasUsuario(userData.email)
         .then((data) => {
           if (Array.isArray(data)) {
-            setBoletas(data);  // Solo setea boletas si es un array
+            setBoletas(data);  
           } else {
             console.error("La respuesta no es un array:", data);
           }

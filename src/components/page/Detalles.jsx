@@ -18,7 +18,7 @@ const Detalles = () => {
   const [respuestaActiva, setRespuestaActiva] = useState(null);
   const [textoRespuesta, setTextoRespuesta] = useState("");
 
-  // Cargar datos del producto + comentarios
+  
   useEffect(() => {
     obtenerProductoPorId(id)
       .then((data) => setProducto(data))
@@ -31,7 +31,7 @@ const Detalles = () => {
       .catch((err) => console.error("Error al cargar comentarios:", err));
   }, [id]);
 
-  // Agregar al carrito
+  
   const agregarAlCarrito = () => {
     carritoReal.agregar({
       id: producto.id,
@@ -44,7 +44,7 @@ const Detalles = () => {
     mostrarMensaje("Producto agregado al carrito", "success");
   };
 
-  // Enviar reseña
+  
   const handleSubmitReview = (e) => {
     e.preventDefault();
 
@@ -71,7 +71,7 @@ const Detalles = () => {
       });
   };
 
-  // ❤️ LIKE
+
   const darLike = (comentarioId) => {
     fetch(`${API_URL}/productos/comentarios/${comentarioId}/like`, {
       method: "POST",
@@ -86,7 +86,7 @@ const Detalles = () => {
       });
   };
 
-  // 💬 RESPUESTA
+
   const enviarRespuesta = (comentarioId) => {
     if (!textoRespuesta.trim()) return;
 
@@ -115,12 +115,12 @@ const Detalles = () => {
     <div style={{ width: "100%", minHeight: "100vh" }}>
       <main className="detalle-producto">
         
-        {/* IMAGEN */}
+        {}
         <div className="imagen">
           <img src={producto.imagen} alt={producto.nombre} />
         </div>
 
-        {/* INFO */}
+        {}
         <div className="info">
           <h2>{producto.nombre}</h2>
           <p className="precio">
@@ -136,11 +136,11 @@ const Detalles = () => {
           </Link>
         </div>
 
-        {/* COMENTARIOS */}
+        {}
         <section id="reviews" className="reviews-card">
           <h2>Reseñas</h2>
 
-          {/* FORMULARIO NUEVA RESEÑA */}
+          {}
           <form className="review-form" onSubmit={handleSubmitReview}>
             <label>Tu calificación</label>
 
@@ -172,7 +172,7 @@ const Detalles = () => {
             </button>
           </form>
 
-          {/* LISTA DE COMENTARIOS */}
+          {}
           <ul className="reviews-list">
             {comentarios.length === 0 ? (
               <p>No hay reseñas aún.</p>
@@ -188,7 +188,7 @@ const Detalles = () => {
 
                   <p className="review-body">{c.texto}</p>
 
-                  {/* ❤️ LIKE */}
+                  {}
                   <button
                     className="btn-like"
                     onClick={() => darLike(c.id)}
@@ -196,7 +196,7 @@ const Detalles = () => {
                     ❤️ {c.likes}
                   </button>
 
-                  {/* 💬 RESPONDER */}
+                  {}
                   <button
                     className="btn-responder"
                     onClick={() =>
@@ -206,7 +206,7 @@ const Detalles = () => {
                     💬 Responder
                   </button>
 
-                  {/* FORMULARIO RESPUESTA */}
+                  {}
                   {respuestaActiva === c.id && (
                     <div className="respuesta-form">
                       <textarea
@@ -220,7 +220,7 @@ const Detalles = () => {
                     </div>
                   )}
 
-                  {/* LISTA DE RESPUESTAS */}
+                  {}
                   {c.respuestas.length > 0 && (
                     <ul className="respuestas-list">
                       {c.respuestas.map((r, idx) => (
