@@ -75,7 +75,6 @@ const Perfil = () => {
             <p><strong>Mi código referido:</strong> {perfil.codigoReferido}</p>
             <p><strong>Fui referido por:</strong> {perfil.codigoReferente || "Nadie"}</p>
             <p><strong>Descuento DUOC:</strong> {perfil.descuentoDuoc}%</p>
-            <p><strong>Preferencias:</strong> {perfil.preferencias || "No especificado"}</p>
             <p><strong>Fecha registro:</strong> {perfil.fechaRegistro?.replace("T", " a las ")}</p>
           </div>
         )}
