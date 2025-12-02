@@ -1,92 +1,89 @@
 import React, { useEffect, useState } from "react";
-import { obtenerBoletasUsuario } from "../../api/boletas";
-import { gamification } from "../Atoms/Validaciones";
+import { useNavigate } from "react-router-dom";
+import api from "../../api/api";
 
 const Perfil = () => {
-  const [user, setUser] = useState(null);
-  const [boletas, setBoletas] = useState([]);  
+  const [perfil, setPerfil] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const userData = JSON.parse(sessionStorage.getItem("userData") || "{}");
-    setUser(userData);
+    const fetchPerfil = async () => {
+      try {
+        const response = await api.get("/usuario/perfil");
+        setPerfil(response.data);
+      } catch (err) {
+        console.error("Error al cargar perfil:", err);
 
-    if (userData.email) {
-      obtenerBoletasUsuario(userData.email)
-        .then((data) => {
-          if (Array.isArray(data)) {
-            setBoletas(data);  
-          } else {
-            console.error("La respuesta no es un array:", data);
-          }
-        })
-        .catch((err) => console.error("Error cargando boletas", err));
-    }
-  }, []);
+        if (err.response?.status === 401) {
+          setError("Token inválido o expirado. Inicia sesión nuevamente.");
 
-  if (!user) return <p>Cargando…</p>;
+          setTimeout(() => {
+            localStorage.removeItem("token");
+            sessionStorage.removeItem("token");
+            navigate("/login");
+          }, 1500);
+        } else {
+          setError("No se pudo cargar el perfil.");
+        }
+      } finally {
+        setLoading(false);
+      }
+    };
 
-  const level = gamification.getUserLevel(user.levelUpPoints || 0);
+    fetchPerfil();
+  }, [navigate]);
 
-  return (
-    <main style={{ maxWidth: "800px", margin: "0 auto", padding: "2rem" }}>
-      <h2>👤 Mi Perfil</h2>
+  const logout = () => {
+    localStorage.removeItem("token");
+    sessionStorage.removeItem("token");
+    navigate("/login");
+  };
 
-      <section
+  if (loading)
+    return <p style={{ textAlign: "center" }}>Cargando perfil...</p>;
+
+  if (error)
+    return (
+      <p
         style={{
-          background: "rgba(255,255,255,0.05)",
-          padding: "1.5rem",
-          borderRadius: "12px",
-          marginBottom: "2rem",
+          textAlign: "center",
+          padding: "1rem",
+          background: "#ff6b6b",
+          color: "white",
+          borderRadius: "8px",
         }}
       >
-        <p><strong>Nombre:</strong> {user.nombre}</p>
-        <p><strong>Email:</strong> {user.email}</p>
-        <p><strong>Puntos Level-Up:</strong> {user.levelUpPoints}</p>
-        <p><strong>Nivel:</strong> {level.name}</p>
-        <p><strong>Descuento nivel:</strong> {level.discount}%</p>
+        {error}
+      </p>
+    );
 
-        {user.descuentoDuoc > 0 && (
-          <p><strong>Descuento DUOC:</strong> {user.descuentoDuoc}%</p>
-        )}
-      </section>
+  return (
+    <main className="wrap">
+      <section className="auth-box">
+        <h2>Mi Perfil</h2>
 
-      <h2>🧾 Historial de Compras</h2>
-
-      {boletas.length === 0 ? (
-        <p style={{ opacity: 0.7 }}>Aún no tienes compras registradas.</p>
-      ) : (
-        boletas.map((b) => (
-          <div
-            key={b.id}
-            style={{
-              background: "rgba(255,255,255,0.05)",
-              padding: "1.5rem",
-              borderRadius: "12px",
-              marginBottom: "1rem",
-              borderLeft: "4px solid #39FF14",
-            }}
-          >
-            <h3>Boleta #{b.id}</h3>
-            <p><strong>Fecha:</strong> {b.fecha}</p>
-            <p><strong>Total:</strong> ${b.total.toLocaleString("es-CL")}</p>
-
-            <details style={{ marginTop: "1rem" }}>
-              <summary style={{ cursor: "pointer", color: "#39FF14" }}>
-                Ver detalles ▼
-              </summary>
-
-              {b.detalles.map((d) => (
-                <div key={d.id} style={{ marginTop: "0.8rem", paddingLeft: "1rem" }}>
-                  <p><strong>{d.nombre}</strong></p>
-                  <p>Precio: ${d.precio.toLocaleString("es-CL")}</p>
-                  <p>Cantidad: {d.cantidad}</p>
-                  <p>Subtotal: ${d.subtotal.toLocaleString("es-CL")}</p>
-                </div>
-              ))}
-            </details>
+        {perfil && (
+          <div className="perfil-data">
+            <p><strong>Nombre:</strong> {perfil.nombre}</p>
+            <p><strong>Email:</strong> {perfil.email}</p>
+            <p><strong>Rol:</strong> {perfil.rol}</p>
+            <p><strong>Mayor de 18:</strong> {perfil.mayor18 ? "Sí" : "No"}</p>
+            <p><strong>Mis puntos LevelUp:</strong> {perfil.levelUpPoints}</p>
+            <p><strong>Mi código referido:</strong> {perfil.codigoReferido}</p>
+            <p><strong>Fui referido por:</strong> {perfil.codigoReferente || "Nadie"}</p>
+            <p><strong>Descuento DUOC:</strong> {perfil.descuentoDuoc}%</p>
+            <p><strong>Preferencias:</strong> {perfil.preferencias || "No especificado"}</p>
+            <p><strong>Fecha registro:</strong> {perfil.fechaRegistro?.replace("T", " a las ")}</p>
           </div>
-        ))
-      )}
+        )}
+
+        <button className="btn" style={{ marginTop: "1.5rem" }} onClick={logout}>
+          Cerrar Sesión
+        </button>
+      </section>
     </main>
   );
 };
