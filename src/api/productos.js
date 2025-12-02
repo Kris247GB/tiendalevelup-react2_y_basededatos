@@ -1,44 +1,44 @@
-import axios from "axios";
-
-const API_URL = "http://localhost:8081/api/productos";
+// src/api/productos.js
+import api from "./api";
 
 // Obtener todos los productos
 export async function obtenerProductos() {
-  const response = await axios.get(API_URL);
-  return response.data;
+  const res = await api.get("/productos");
+  return res.data;
 }
 
-// Obtener un producto por ID
+// Obtener producto por ID
 export async function obtenerProductoPorId(id) {
-  const response = await axios.get(`${API_URL}/${id}`);
-  return response.data;
+  const res = await api.get(`/productos/${id}`);
+  return res.data;
 }
 
-// Obtener un producto por código (si lo necesitas)
+// Obtener producto por código
 export async function obtenerProductoPorCodigo(codigo) {
-  const response = await axios.get(`${API_URL}/codigo/${codigo}`);
-  return response.data;
+  const res = await api.get(`/productos/codigo/${codigo}`);
+  return res.data;
 }
 
-// Crear producto
+// Crear producto (ADMIN)
 export async function crearProducto(producto) {
-  const response = await axios.post(API_URL, producto);
-  return response.data;
+  const res = await api.post("/productos", producto);
+  return res.data;
 }
 
-// Actualizar producto
+// Actualizar producto (ADMIN)
 export async function actualizarProducto(id, producto) {
-  const response = await axios.put(`${API_URL}/${id}`, producto);
-  return response.data;
+  const res = await api.put(`/productos/${id}`, producto);
+  return res.data;
 }
 
-// Eliminar producto
+// Eliminar producto (ADMIN)
 export async function eliminarProducto(id) {
-  const response = await axios.delete(`${API_URL}/${id}`);
-  return response.data;
+  const res = await api.delete(`/productos/${id}`);
+  return res.data;
 }
 
+// Categorías dinámicas
 export async function obtenerCategorias() {
-  const res = await axios.get("http://localhost:8081/api/productos/categorias");
+  const res = await api.get("/productos/categorias");
   return res.data;
 }

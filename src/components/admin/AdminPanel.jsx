@@ -9,6 +9,7 @@ import {
 
 import { listarBoletas } from "../../api/boletas";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 
 // Normalizamos producto de backend → frontend
 function normalize(p = {}) {
@@ -56,23 +57,18 @@ export default function AdminPanel() {
   // NUEVO: ventas del backend
   const [ventas, setVentas] = useState([]);
 
-  useEffect(() => {
-    const ok = sessionStorage.getItem("isLoggedIn") === "true";
-    const admin = sessionStorage.getItem("isAdmin") === "true";
-    setIsAdmin(ok && admin);
-    if (!(ok && admin)) {
-      navigate("/login");
-      return;
-    }
 
-    refresh();
 
-    // Cargar boletas para dashboard
-    listarBoletas()
-      .then((data) => setVentas(data))
-      .catch((err) => console.error("Error cargando ventas:", err));
+  const { user } = useAuth();
 
-  }, []);
+    useEffect(() => {
+      if (!user || user.rol !== "ADMIN") {
+        navigate("/login");
+        return;
+      }
+      refresh();
+      listarBoletas().then(setVentas);
+    }, [user]);
 
   const refresh = () => {
     obtenerProductos().then(data => {

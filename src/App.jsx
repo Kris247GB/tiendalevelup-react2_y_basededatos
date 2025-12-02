@@ -15,8 +15,9 @@ import Comunidad from "./components/page/Comunidad";
 import Eventos from './components/page/Eventos';
 import Contacto from "./components/page/Contacto";
 
-// IMPORTAR EL PROTECTOR
+// Protectores
 import ProtectedRoute from "./components/ProtectedRoute";
+import AdminRoute from "./routes/AdminRoute"; // <-- NUEVO
 
 function App() {
   return (
@@ -26,7 +27,7 @@ function App() {
 
         <Routes>
 
-          {/* Publicas */}
+          {/* Rutas públicas */}
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/registro" element={<Registro />} />
@@ -34,10 +35,8 @@ function App() {
           <Route path="/eventos" element={<Eventos />} />
           <Route path="/comunidad" element={<Comunidad />} />
           <Route path="/detalles/:id" element={<Detalles />} />
-          <Route path="/perfil" element={<Perfil />} />
 
-
-          {/* Privadas */}
+          {/* Rutas privadas (requiere estar logueado) */}
           <Route
             path="/perfil"
             element={
@@ -56,12 +55,13 @@ function App() {
             }
           />
 
+          {/* RUTA SOLO PARA ADMIN */}
           <Route
             path="/admin"
             element={
-              <ProtectedRoute>
+              <AdminRoute>
                 <AdminPanel />
-              </ProtectedRoute>
+              </AdminRoute>
             }
           />
 

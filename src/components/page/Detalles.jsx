@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { obtenerProductoPorId } from "../../api/productos";
+
+import api from "../../api/api";  // <--- USAR API CENTRALIZADO
 import carritoReal from "../Atoms/carritoReal";
 import { mostrarMensaje } from "../Atoms/Validaciones";
-
-const API_URL = "http://localhost:8081/api";
+import { obtenerProductoPorId } from "../../api/productos";
 
 const Detalles = () => {
   const { id } = useParams();
+
   const [producto, setProducto] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -18,20 +19,20 @@ const Detalles = () => {
   const [respuestaActiva, setRespuestaActiva] = useState(null);
   const [textoRespuesta, setTextoRespuesta] = useState("");
 
-  
+  // Cargar producto + comentarios
   useEffect(() => {
     obtenerProductoPorId(id)
       .then((data) => setProducto(data))
       .catch((err) => console.error("Error al cargar producto:", err))
       .finally(() => setLoading(false));
 
-    fetch(`${API_URL}/productos/${id}/comentarios`)
-      .then((res) => res.json())
-      .then((data) => setComentarios(data))
-      .catch((err) => console.error("Error al cargar comentarios:", err));
+    api.get(`/productos/${id}/comentarios`)
+      .then((res) => setComentarios(res.data))
+      .catch((err) => console.error("Error cargando comentarios:", err));
+
   }, [id]);
 
-  
+  // Carrito
   const agregarAlCarrito = () => {
     carritoReal.agregar({
       id: producto.id,
@@ -44,8 +45,8 @@ const Detalles = () => {
     mostrarMensaje("Producto agregado al carrito", "success");
   };
 
-  
-  const handleSubmitReview = (e) => {
+  // Crear comentario
+  const handleSubmitReview = async (e) => {
     e.preventDefault();
 
     if (!rating || !reviewText.trim()) {
@@ -54,58 +55,59 @@ const Detalles = () => {
     }
 
     const comentario = {
-      rating: rating,
+      rating,
       texto: reviewText,
     };
 
-    fetch(`${API_URL}/productos/${producto.id}/comentarios`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(comentario),
-    })
-      .then((res) => res.json())
-      .then((nuevoComentario) => {
-        setComentarios([...comentarios, nuevoComentario]);
-        setRating(0);
-        setReviewText("");
-      });
+    try {
+      const res = await api.post(`/productos/${producto.id}/comentarios`, comentario);
+      setComentarios([...comentarios, res.data]);
+
+      setRating(0);
+      setReviewText("");
+
+    } catch (err) {
+      console.error("Error publicando reseña:", err);
+    }
   };
 
+  // Dar like
+  const darLike = async (comentarioId) => {
+    try {
+      const res = await api.post(`/productos/comentarios/${comentarioId}/like`);
+      const actualizado = res.data;
 
-  const darLike = (comentarioId) => {
-    fetch(`${API_URL}/productos/comentarios/${comentarioId}/like`, {
-      method: "POST",
-    })
-      .then((res) => res.json())
-      .then((comentarioActualizado) => {
-        setComentarios(
-          comentarios.map((c) =>
-            c.id === comentarioActualizado.id ? comentarioActualizado : c
-          )
-        );
-      });
+      setComentarios(
+        comentarios.map((c) => (c.id === actualizado.id ? actualizado : c))
+      );
+    } catch (err) {
+      console.error("Error dando like:", err);
+    }
   };
 
-
-  const enviarRespuesta = (comentarioId) => {
+  // Responder comentario
+  const enviarRespuesta = async (comentarioId) => {
     if (!textoRespuesta.trim()) return;
 
-    fetch(`${API_URL}/productos/comentarios/${comentarioId}/respuesta`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(textoRespuesta),
-    })
-      .then((res) => res.json())
-      .then((comentarioActualizado) => {
-        setComentarios(
-          comentarios.map((c) =>
-            c.id === comentarioActualizado.id ? comentarioActualizado : c
-          )
-        );
+    try {
+      const res = await api.post(
+        `/productos/comentarios/${comentarioId}/respuesta`,
+        textoRespuesta,
+        { headers: { "Content-Type": "application/json" } }
+      );
 
-        setRespuestaActiva(null);
-        setTextoRespuesta("");
-      });
+      const actualizado = res.data;
+
+      setComentarios(
+        comentarios.map((c) => (c.id === actualizado.id ? actualizado : c))
+      );
+
+      setRespuestaActiva(null);
+      setTextoRespuesta("");
+
+    } catch (err) {
+      console.error("Error enviando respuesta:", err);
+    }
   };
 
   if (loading) return <p style={{ color: "white" }}>Cargando…</p>;
@@ -114,13 +116,13 @@ const Detalles = () => {
   return (
     <div style={{ width: "100%", minHeight: "100vh" }}>
       <main className="detalle-producto">
-        
-        {}
+
+        {/* Imagen */}
         <div className="imagen">
           <img src={producto.imagen} alt={producto.nombre} />
         </div>
 
-        {}
+        {/* Info */}
         <div className="info">
           <h2>{producto.nombre}</h2>
           <p className="precio">
@@ -136,11 +138,11 @@ const Detalles = () => {
           </Link>
         </div>
 
-        {}
+        {/* Comentarios */}
         <section id="reviews" className="reviews-card">
           <h2>Reseñas</h2>
 
-          {}
+          {/* Formulario nueva reseña */}
           <form className="review-form" onSubmit={handleSubmitReview}>
             <label>Tu calificación</label>
 
@@ -172,14 +174,13 @@ const Detalles = () => {
             </button>
           </form>
 
-          {}
+          {/* Lista de comentarios */}
           <ul className="reviews-list">
             {comentarios.length === 0 ? (
               <p>No hay reseñas aún.</p>
             ) : (
               comentarios.map((c) => (
                 <li className="review-item" key={c.id}>
-                  
                   <div className="review-head">
                     <span className="stars" style={{ "--value": c.rating }} />
                     <strong className="user">Usuario</strong>
@@ -188,15 +189,10 @@ const Detalles = () => {
 
                   <p className="review-body">{c.texto}</p>
 
-                  {}
-                  <button
-                    className="btn-like"
-                    onClick={() => darLike(c.id)}
-                  >
+                  <button className="btn-like" onClick={() => darLike(c.id)}>
                     ❤️ {c.likes}
                   </button>
 
-                  {}
                   <button
                     className="btn-responder"
                     onClick={() =>
@@ -206,7 +202,6 @@ const Detalles = () => {
                     💬 Responder
                   </button>
 
-                  {}
                   {respuestaActiva === c.id && (
                     <div className="respuesta-form">
                       <textarea
@@ -220,7 +215,6 @@ const Detalles = () => {
                     </div>
                   )}
 
-                  {}
                   {c.respuestas.length > 0 && (
                     <ul className="respuestas-list">
                       {c.respuestas.map((r, idx) => (

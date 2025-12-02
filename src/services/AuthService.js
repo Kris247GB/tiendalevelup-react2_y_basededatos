@@ -17,12 +17,12 @@ export async function login(email, password) {
       // Guardar token
       localStorage.setItem("token", data.token);
 
-      // Guardar información básica del usuario
+      // Guardar info del usuario (se usará como fallback para el contexto)
       localStorage.setItem("userEmail", data.email);
       localStorage.setItem("userNombre", data.nombre);
       localStorage.setItem("userRol", data.rol);
 
-      return data;
+      return data; // <-- SE PASA AL AuthContext
     })
     .catch(err => {
       throw err.response?.data || { error: "Error al iniciar sesión" };
@@ -34,10 +34,6 @@ export function logout() {
   localStorage.removeItem("userEmail");
   localStorage.removeItem("userNombre");
   localStorage.removeItem("userRol");
-}
-
-export function isLoggedIn() {
-  return !!localStorage.getItem("token");
 }
 
 export function getToken() {
