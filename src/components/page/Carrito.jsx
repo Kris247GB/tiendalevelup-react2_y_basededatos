@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 
 import {
   obtenerCarrito,
@@ -9,9 +9,11 @@ import {
   calcularTotal
 } from '../Atoms/carritoReal';
 
-import { gamification, mostrarMensaje } from '../Atoms/Validaciones';
+import { mostrarMensaje } from '../Atoms/Validaciones';
 import { scroller } from 'react-scroll';
+
 import { registrarBoleta } from '../../api/boletas';
+import api from "../../api/api";
 
 const Carrito = () => {
   const [items, setItems] = useState([]);
@@ -19,18 +21,17 @@ const Carrito = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const isLoggedIn = sessionStorage.getItem('isLoggedIn') === 'true';
-    if (!isLoggedIn) {
-      mostrarMensaje('Debes iniciar sesión para ver el carrito', 'error');
-      navigate('/login');
+    const saved = sessionStorage.getItem("userData");
+
+    if (!saved) {
+      mostrarMensaje("Debes iniciar sesión para ver el carrito", "error");
+      navigate("/login");
       return;
     }
 
-    const user = JSON.parse(sessionStorage.getItem('userData') || '{}');
-    setUserData(user);
-
+    setUserData(JSON.parse(saved));
     setItems(obtenerCarrito());
-  }, [navigate]);
+  }, []);
 
   const handleEliminar = (codigo) => {
     const nuevo = eliminar(codigo);
@@ -44,149 +45,137 @@ const Carrito = () => {
   };
 
   const handleVaciar = () => {
-    if (window.confirm('¿Estás seguro de vaciar el carrito?')) {
+    if (window.confirm("¿Seguro deseas vaciar el carrito?")) {
       vaciar();
       setItems([]);
-      mostrarMensaje('Carrito vaciado', 'success');
+      mostrarMensaje("Carrito vaciado", "success");
     }
   };
 
   const handleComprar = async () => {
     if (items.length === 0) {
-      mostrarMensaje('El carrito está vacío', 'error');
+      mostrarMensaje("El carrito está vacío", "error");
       return;
     }
 
     const subtotal = calcularTotal();
-    const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
-    const descuentoDuoc = userData?.descuentoDuoc || 0;
+    const descuentoLevel = userData.levelUpPoints || 0;
+    const descuentoDuoc = userData.descuentoDuoc || 0;
 
-    const totalConNivel = subtotal * (1 - descuentoLevel / 100);
-    const totalFinal = Math.round(totalConNivel * (1 - descuentoDuoc / 100));
+    const totalFinal = Math.round(
+      subtotal * (1 - descuentoLevel / 100) * (1 - descuentoDuoc / 100)
+    );
+
     const puntosGanados = Math.floor(totalFinal / 1000);
 
     try {
-      const boleta = await registrarBoleta({
+      const nuevaBoleta = await registrarBoleta({
         emailUsuario: userData.email,
         total: totalFinal,
-        detalles: items.map(item => ({
-          productoId: item.id,
-          nombre: item.nombre,
-          precio: item.precio,
-          cantidad: item.cantidad,
-          subtotal: item.precio * item.cantidad
+        detalles: items.map(i => ({
+          productoId: i.id,
+          nombre: i.nombre,
+          precio: i.precio,
+          cantidad: i.cantidad,
+          subtotal: i.precio * i.cantidad
         }))
       });
 
-      gamification.addPoints(userData.email, puntosGanados);
+      // 🔥 ACTUALIZAR PUNTOS EN BACKEND
+      const nuevosPuntos = (userData.levelUpPoints || 0) + puntosGanados;
+
+      await api.put(`/usuario/${userData.email}/actualizar-puntos`, {
+        levelUpPoints: nuevosPuntos
+      });
+
+      // 🔥 GUARDAR NUEVO PERFIL EN FRONTEND
+      const actualizado = {
+        ...userData,
+        levelUpPoints: nuevosPuntos
+      };
+
+      sessionStorage.setItem("userData", JSON.stringify(actualizado));
+      setUserData(actualizado);
 
       mostrarMensaje(
-        `¡Compra realizada! Boleta #${boleta.id} generada 🎉 Ganaste ${puntosGanados} puntos`,
+        `¡Compra realizada! 🎉 Ganaste ${puntosGanados} puntos`,
         'success'
       );
 
       vaciar();
       setItems([]);
 
-      setTimeout(() => navigate('/perfil'), 2000);
+      setTimeout(() => navigate("/perfil"), 1500);
 
     } catch (err) {
       console.error("Error al comprar:", err);
-      const mensajeError =
-        err.response?.data?.message ||
-        err.response?.data ||
-        "No se pudo completar la compra. Intenta nuevamente.";
-      mostrarMensaje(mensajeError, "error");
+      mostrarMensaje("No se pudo completar la compra", "error");
     }
   };
 
   const continuarComprando = () => {
-    navigate('/');
+    navigate("/");
     setTimeout(() => {
-      scroller.scrollTo('catalogo', { duration: 500, smooth: true, offset: -100 });
+      scroller.scrollTo("catalogo", {
+        duration: 500,
+        smooth: true,
+        offset: -100,
+      });
     }, 300);
   };
 
   const subtotal = calcularTotal();
-  const descuentoLevel = userData ? gamification.getUserLevel(userData.levelUpPoints || 0)?.discount : 0;
-  const descuentoDuoc = userData?.descuentoDuoc || 0;
-  const totalConDescuento = Math.round(
-    subtotal * (1 - descuentoLevel / 100) * (1 - descuentoDuoc / 100)
-  );
-  const descuento = subtotal - totalConDescuento;
 
   return (
-    <main className="wrap" style={{ maxWidth: '1200px', margin: '0 auto', padding: '2rem' }}>
+    <main className="wrap" style={{ maxWidth: "1200px", padding: "2rem" }}>
       <section>
         <h2>🛒 Mi Carrito de Compras</h2>
 
         {userData && (
-          <div
-            style={{
-              background: 'rgba(57, 255, 20, 0.1)',
-              padding: '1rem',
-              borderRadius: '8px',
-              marginBottom: '2rem',
-              border: '1px solid #39FF14',
-            }}
-          >
-            <p><strong>Nivel:</strong> {gamification.getUserLevel(userData.levelUpPoints || 0)?.name}</p>
-            <p><strong>Descuento por nivel:</strong> {descuentoLevel}%</p>
-            {userData.descuentoDuoc > 0 && (
-              <p><strong>Descuento DUOC:</strong> {descuentoDuoc}%</p>
-            )}
+          <div style={{
+            background: "rgba(57,255,20,0.1)",
+            padding: "1rem",
+            borderRadius: "8px",
+            border: "1px solid #39FF14",
+            marginBottom: "1rem"
+          }}>
+            <p><strong>Puntos actuales:</strong> {userData.levelUpPoints}</p>
+            <p><strong>Descuento DUOC:</strong> {userData.descuentoDuoc}%</p>
           </div>
         )}
 
         {items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '3rem' }}>
-            <p style={{ fontSize: '1.5rem', marginBottom: '2rem' }}>
-              Tu carrito está vacío
-            </p>
-            <button className="btn" onClick={continuarComprando}>
-              Ir a comprar
-            </button>
+          <div style={{ textAlign: "center", padding: "3rem" }}>
+            <p style={{ fontSize: "1.5rem" }}>Tu carrito está vacío</p>
+            <button className="btn" onClick={continuarComprando}>Ir a comprar</button>
           </div>
         ) : (
           <>
             <div className="carrito-items">
-              {items.map((item) => (
-                <div
-                  key={item.id}
-                  className="carrito-item"
+              {items.map(item => (
+                <div key={item.id} className="carrito-item"
                   style={{
-                    display: 'flex',
-                    gap: '1rem',
-                    padding: '1rem',
-                    background: 'rgba(255,255,255,0.05)',
-                    borderRadius: '8px',
-                    marginBottom: '1rem',
-                    alignItems: 'center',
-                  }}
-                >
-                  {item.imagen && (
-                    <img
-                      src={item.imagen}
-                      alt={item.nombre}
-                      style={{ width: '100px', height: '100px', objectFit: 'cover', borderRadius: '8px' }}
-                    />
-                  )}
+                    display: "flex",
+                    gap: "1rem",
+                    padding: "1rem",
+                    background: "rgba(255,255,255,0.05)",
+                    borderRadius: "8px",
+                    marginBottom: "1rem"
+                  }}>
+                  <img src={item.imagen} style={{ width: "100px", borderRadius: "8px" }} />
                   <div style={{ flex: 1 }}>
                     <h3>{item.nombre}</h3>
-                    <p>Precio: ${item.precio.toLocaleString('es-CL')}</p>
+                    <p>${item.precio.toLocaleString("es-CL")}</p>
                   </div>
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                    <label>Cantidad:</label>
-                    <input
-                      type="number"
-                      min="1"
-                      value={item.cantidad}
-                      onChange={(e) => handleCantidad(item.codigo, e.target.value)}
-                      style={{ width: '60px', padding: '0.5rem' }}
-                    />
-                  </div>
-                  <p style={{ fontWeight: 'bold' }}>
-                    ${(item.precio * item.cantidad).toLocaleString('es-CL')}
+                  <input
+                    type="number"
+                    min="1"
+                    value={item.cantidad}
+                    onChange={e => handleCantidad(item.codigo, e.target.value)}
+                    style={{ width: "60px" }}
+                  />
+                  <p style={{ fontWeight: "bold" }}>
+                    ${(item.precio * item.cantidad).toLocaleString("es-CL")}
                   </p>
                   <button className="btn btn-danger" onClick={() => handleEliminar(item.codigo)}>
                     🗑️ Eliminar
@@ -195,38 +184,12 @@ const Carrito = () => {
               ))}
             </div>
 
-            <div
-              style={{
-                marginTop: '2rem',
-                padding: '2rem',
-                background: 'rgba(255,255,255,0.05)',
-                borderRadius: '8px',
-              }}
-            >
+            <div style={{ padding: "2rem", background: "rgba(255,255,255,0.05)", borderRadius: "8px" }}>
               <h3>Resumen de compra</h3>
-              <p>Subtotal: ${subtotal.toLocaleString('es-CL')}</p>
+              <p>Subtotal: ${subtotal.toLocaleString("es-CL")}</p>
 
-              {descuento > 0 && (
-                <p style={{ color: '#39FF14' }}>
-                  Descuento total: -${descuento.toLocaleString('es-CL')}
-                </p>
-              )}
-
-              <p style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#39FF14' }}>
-                Total: ${totalConDescuento.toLocaleString('es-CL')}
-              </p>
-
-              <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexWrap: 'wrap' }}>
-                <button className="btn" onClick={handleComprar}>
-                  💳 Finalizar Compra
-                </button>
-                <button className="btn btn-secondary" onClick={handleVaciar}>
-                  🗑️ Vaciar Carrito
-                </button>
-                <button className="btn btn-secondary" onClick={continuarComprando}>
-                  ← Seguir comprando
-                </button>
-              </div>
+              <button className="btn" onClick={handleComprar}>💳 Finalizar Compra</button>
+              <button className="btn btn-secondary" onClick={handleVaciar}>Vaciar Carrito</button>
             </div>
           </>
         )}

@@ -34,6 +34,8 @@ function App() {
           <Route path="/eventos" element={<Eventos />} />
           <Route path="/comunidad" element={<Comunidad />} />
           <Route path="/detalles/:id" element={<Detalles />} />
+          <Route path="/perfil" element={<Perfil />} />
+
 
           {/* Privadas */}
           <Route

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../../services/AuthService';   // ← Usa tu AuthService
+import { login } from '../../services/AuthService';
 import api from '../../api/api';
 
 const Login = () => {
@@ -26,22 +26,22 @@ const Login = () => {
     }
 
     try {
-      // 📌 1. LOGIN → backend
+      // 1) Login backend
       const data = await login(email, password);
-      const { token, email: emailFromApi } = data;
 
-      // 📌 2. Guardar token
+      const { token } = data;
+
+      // 2) Guardar token
       if (rememberMe) {
         localStorage.setItem("token", token);
       } else {
         sessionStorage.setItem("token", token);
       }
 
-      // 📌 3. Obtener perfil del usuario
+      // 3) Obtener perfil real
       const perfilRes = await api.get("/usuario/perfil");
       const perfil = perfilRes.data;
 
-      // 📌 4. Guardar datos del perfil (sessionStorage)
       sessionStorage.setItem("userData", JSON.stringify(perfil));
       sessionStorage.setItem("isLoggedIn", "true");
 
@@ -77,14 +77,12 @@ const Login = () => {
 
       <div className="login-container">
 
-        {/* Logo */}
         <div className="login-logo">
           <i className="fas fa-gamepad logo-icon"></i>
           <h1 className="login-title">LEVEL-UP GAMER</h1>
           <p className="login-subtitle">Accede a tu cuenta gamer</p>
         </div>
 
-        {/* Mensaje */}
         {message && (
           <div
             className={`message ${messageType}`}
@@ -102,7 +100,6 @@ const Login = () => {
           </div>
         )}
 
-        {/* Formulario */}
         <form className="login-form" onSubmit={handleSubmit}>
           <div className="form-group">
             <label className="form-label" htmlFor="email">Email</label>
@@ -138,7 +135,6 @@ const Login = () => {
             </div>
           </div>
 
-          {/* Recordarme */}
           <div className="remember-container">
             <div className="checkbox-group">
               <div className="custom-checkbox">
@@ -154,13 +150,11 @@ const Login = () => {
                 Recordarme
               </label>
             </div>
-            <a href="#" className="forgot-password">¿Olvidaste tu contraseña?</a>
           </div>
 
           <button type="submit" className="login-button" disabled={isLoading}>
             <i className="fas fa-sign-in-alt"></i>
             <span>{isLoading ? 'Iniciando...' : 'Iniciar Sesión'}</span>
-            {isLoading && <div className="loading"></div>}
           </button>
         </form>
 
