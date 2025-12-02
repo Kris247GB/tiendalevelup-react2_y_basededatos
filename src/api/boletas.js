@@ -1,23 +1,25 @@
-import axios from "axios";
+// src/api/boletas.js
+import api from "./api"; // <-- usa tu instancia con JWT
 
-const API_URL = "http://localhost:8081/api/boletas";
+const API_URL = "/boletas"; 
+// api ya tiene baseURL: http://localhost:8081/api
 
 export async function registrarBoleta(data) {
-  const res = await axios.post(API_URL, data);
+  const res = await api.post(API_URL, data);
   return res.data;
 }
 
 export async function obtenerBoleta(id) {
-  const res = await axios.get(`${API_URL}/${id}`);
+  const res = await api.get(`${API_URL}/${id}`);
   return res.data;
 }
 
 export async function listarBoletas() {
-  const res = await axios.get("http://localhost:8081/api/boletas");
+  const res = await api.get(API_URL);
   return res.data;
 }
 
 export async function obtenerBoletasUsuario(email) {
-  const res = await axios.get(`http://localhost:8081/api/boletas/usuario/${email}`);
+  const res = await api.get(`${API_URL}/usuario/${email}`);
   return res.data;
 }
