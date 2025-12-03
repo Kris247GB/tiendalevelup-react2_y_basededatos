@@ -1,35 +1,28 @@
 import React, { useEffect, useState } from "react";
-
 import {
   obtenerProductos,
   crearProducto,
   actualizarProducto,
-  eliminarProducto
+  eliminarProducto,
 } from "../../api/productos";
 
 import { listarBoletas } from "../../api/boletas";
-import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 
-// Normalizamos producto de backend → frontend
-function normalize(p = {}) {
-  return {
-    id: p.id ?? "",
-    code: p.codigo ?? "",
-    name: p.nombre ?? "",
-    priceCLP: p.precio ?? 0,
-    category: p.categoria ?? "",
-    image: p.imagen ?? "",
-    description: p.descripcion ?? "",
-    stock: p.stock ?? 0,
-    onOffer: p.destacado ?? false,
-  };
-}
+const normalize = (p = {}) => ({
+  id: p.id ?? "",
+  code: p.codigo ?? "",
+  name: p.nombre ?? "",
+  priceCLP: p.precio ?? 0,
+  category: p.categoria ?? "",
+  image: p.imagen ?? "",
+  description: p.descripcion ?? "",
+  stock: p.stock ?? 0,
+  onOffer: p.destacado ?? false,
+});
 
-function fmtCLP(n) {
-  const num = Number(n || 0);
-  try { return num.toLocaleString("es-CL"); } catch { return String(num); }
-}
+const fmtCLP = (n) =>
+  Number(n || 0).toLocaleString("es-CL", { minimumFractionDigits: 0 });
 
 const EMPTY = {
   id: "",
@@ -44,8 +37,7 @@ const EMPTY = {
 };
 
 export default function AdminPanel() {
-  const navigate = useNavigate();
-  const [isAdmin, setIsAdmin] = useState(false);
+  const { user } = useAuth();
 
   const [products, setProducts] = useState([]);
   const [cats, setCats] = useState([]);
@@ -53,37 +45,27 @@ export default function AdminPanel() {
 
   const [editing, setEditing] = useState(null);
   const [form, setForm] = useState(EMPTY);
-
-  // NUEVO: ventas del backend
   const [ventas, setVentas] = useState([]);
 
+  useEffect(() => {
+    if (!user) return;
 
-
-  const { user } = useAuth();
-
-    useEffect(() => {
-      if (!user || user.rol !== "ADMIN") {
-        navigate("/login");
-        return;
-      }
-      refresh();
-      listarBoletas().then(setVentas);
-    }, [user]);
+    refresh();
+    listarBoletas().then(setVentas);
+  }, [user]);
 
   const refresh = () => {
-    obtenerProductos().then(data => {
+    obtenerProductos().then((data) => {
       const items = data.map(normalize);
 
-      // Categorías dinámicas según productos
-      const categories = [...new Set(items.map(p => p.category).filter(Boolean))];
-      setCats(categories);
+      setCats([...new Set(items.map((p) => p.category).filter(Boolean))]);
 
-      // Filtrado por búsqueda
       setProducts(
-        items.filter(p =>
-          p.name.toLowerCase().includes(q.toLowerCase()) ||
-          p.category.toLowerCase().includes(q.toLowerCase()) ||
-          p.code.toLowerCase().includes(q.toLowerCase())
+        items.filter(
+          (p) =>
+            p.name.toLowerCase().includes(q.toLowerCase()) ||
+            p.category.toLowerCase().includes(q.toLowerCase()) ||
+            p.code.toLowerCase().includes(q.toLowerCase())
         )
       );
     });
@@ -91,7 +73,10 @@ export default function AdminPanel() {
 
   const onChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setForm((f) => ({ ...f, [name]: type === "checkbox" ? checked : value }));
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
   const startCreate = () => {
@@ -103,17 +88,7 @@ export default function AdminPanel() {
   const startEdit = (p) => {
     const n = normalize(p);
     setEditing(n.id);
-    setForm({
-      id: n.id,
-      code: n.code,
-      name: n.name,
-      priceCLP: n.priceCLP,
-      category: n.category,
-      image: n.image,
-      description: n.description,
-      stock: n.stock,
-      onOffer: n.onOffer,
-    });
+    setForm(n);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -142,24 +117,24 @@ export default function AdminPanel() {
       setForm(EMPTY);
       setEditing(null);
       alert("✅ Guardado correctamente");
-
     } catch (err) {
-      alert("❌ Error: " + err.message);
+      alert("❌ Error: " + (err.response?.data?.error || err.message));
     }
   };
 
   const onDelete = async (id) => {
-    if (confirm("¿Eliminar producto?")) {
+    if (!window.confirm("¿Eliminar producto?")) return;
+
+    try {
       await eliminarProducto(id);
       refresh();
+    } catch (err) {
+      alert("Error eliminando producto");
     }
   };
 
-  if (!isAdmin) return null;
-
   return (
     <main className="wrap" style={{ maxWidth: 1200, margin: "0 auto", padding: "2rem" }}>
-
       <h2>⚙️ Panel Admin — Productos</h2>
 
       {/* BUSCADOR */}
@@ -184,22 +159,18 @@ export default function AdminPanel() {
         <input name="name" value={form.name} onChange={onChange} required className="form-input" />
 
         <div className="label">Precio CLP</div>
-        <input type="number" name="priceCLP" value={form.priceCLP} onChange={onChange} required className="form-input" />
-
-        <div className="label">Categoría</div>
         <input
-          name="category"
-          list="cats"
-          value={form.category}
+          type="number"
+          name="priceCLP"
+          value={form.priceCLP}
           onChange={onChange}
           required
           className="form-input"
         />
-        <datalist id="cats">
-          {cats.map((c) => (
-            <option key={c} value={c} />
-          ))}
-        </datalist>
+
+        <div className="label">Categoría</div>
+        <input name="category" list="cats" value={form.category} onChange={onChange} required className="form-input" />
+        <datalist id="cats">{cats.map((c) => <option key={c} value={c} />)}</datalist>
 
         <div className="label">Stock</div>
         <input type="number" name="stock" value={form.stock} onChange={onChange} className="form-input" />
@@ -207,49 +178,68 @@ export default function AdminPanel() {
         <div className="label">URL Imagen</div>
         <input name="image" value={form.image} onChange={onChange} className="form-input" />
 
+        {form.image && (
+          <img
+            src={form.image}
+            alt="preview"
+            style={{ width: 120, marginTop: 10, borderRadius: 8 }}
+            onError={(e) => (e.target.src = "https://via.placeholder.com/120")}
+          />
+        )}
+
         <div className="label">Descripción</div>
         <textarea name="description" value={form.description} onChange={onChange} className="review-text" />
 
-        <label className="checkline" style={{ marginTop: "0.5rem" }}>
+        <label className="checkline">
           <input type="checkbox" name="onOffer" checked={form.onOffer} onChange={onChange} />
           <span>En oferta</span>
         </label>
 
-        <div style={{ display: "flex", gap: "0.6rem", marginTop: "0.8rem", flexWrap: "wrap" }}>
+        <div style={{ display: "flex", gap: "0.6rem", marginTop: 10 }}>
           <button className="btn" type="submit">
             {editing ? "💾 Guardar cambios" : "➕ Crear producto"}
           </button>
+
           {editing && (
-            <button className="btn btn-secondary" type="button" onClick={() => {
-              setEditing(null);
-              setForm(EMPTY);
-            }}>
+            <button className="btn btn-secondary" type="button" onClick={() => setForm(EMPTY)}>
               Cancelar
             </button>
           )}
         </div>
       </form>
 
-      {/* LISTADO DE PRODUCTOS */}
-      <div className="carrito-items" style={{ marginTop: "2rem" }}>
+      {/* LISTADO */}
+      <div style={{ marginTop: "2rem" }}>
         {products.length === 0 ? (
           <p className="muted">Sin resultados…</p>
         ) : (
           products.map((p) => (
-            <div key={p.id} className="carrito-item"
-              style={{ display: "grid", gridTemplateColumns: "80px 1fr auto", gap: "1rem" }}>
+            <div
+              key={p.id}
+              style={{
+                display: "grid",
+                gridTemplateColumns: "80px 1fr auto",
+                gap: "1rem",
+                padding: "1rem",
+                background: "rgba(255,255,255,0.04)",
+                borderRadius: "8px",
+                marginBottom: "1rem",
+              }}
+            >
               <img
-                src={p.image || "https://via.placeholder.com/80?text=IMG"}
+                src={p.image || "https://via.placeholder.com/80"}
                 alt={p.name}
                 style={{ width: 80, height: 80, objectFit: "cover", borderRadius: 8 }}
               />
-              <div style={{ textAlign: "left" }}>
+
+              <div>
                 <strong>{p.name}</strong> {p.code && <span className="muted">({p.code})</span>}
                 <div className="muted">{p.category}</div>
                 <div>${fmtCLP(p.priceCLP)} CLP</div>
                 {p.onOffer && <div style={{ color: "#39FF14" }}>En oferta</div>}
               </div>
-              <div style={{ display: "flex", gap: "0.5rem", alignItems: "center", flexWrap: "wrap" }}>
+
+              <div style={{ display: "flex", gap: "0.5rem" }}>
                 <button className="btn" onClick={() => startEdit(p)}>✏️ Editar</button>
                 <button className="btn btn-secondary" onClick={() => onDelete(p.id)}>🗑️ Eliminar</button>
               </div>
@@ -258,7 +248,7 @@ export default function AdminPanel() {
         )}
       </div>
 
-      {/* DASHBOARD DE VENTAS */}
+      {/* VENTAS */}
       <h2 style={{ marginTop: "3rem" }}>📊 Ventas Registradas</h2>
 
       <div style={{ marginTop: "1rem" }}>
@@ -310,7 +300,6 @@ export default function AdminPanel() {
           ))
         )}
       </div>
-
     </main>
   );
 }
