@@ -28,19 +28,28 @@ const Login = () => {
     try {
       // 1) Login backend
       const data = await login(email, password);
-
       const { token } = data;
 
-      // 2) Guardar token PRIMERO
+      // 2) Obtener perfil real
+      const perfilRes = await api.get("/usuario/perfil", {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const perfil = perfilRes.data;
+
+      const rol = perfil.rol || "USER";
+
+      // 3) Guardar token y rol
       if (rememberMe) {
         localStorage.setItem("token", token);
+        localStorage.setItem("userRol", rol);
+        localStorage.setItem("userEmail", perfil.email);
+        localStorage.setItem("userNombre", perfil.nombre || "");
       } else {
         sessionStorage.setItem("token", token);
+        sessionStorage.setItem("userRol", rol);
+        sessionStorage.setItem("userEmail", perfil.email);
+        sessionStorage.setItem("userNombre", perfil.nombre || "");
       }
-
-      // 3) Obtener perfil real
-      const perfilRes = await api.get("/usuario/perfil");
-      const perfil = perfilRes.data;
 
       sessionStorage.setItem("userData", JSON.stringify(perfil));
       sessionStorage.setItem("isLoggedIn", "true");
@@ -48,8 +57,11 @@ const Login = () => {
       setMessage('¡Inicio de sesión exitoso! Redirigiendo...');
       setMessageType('success');
 
-      // 🔧 Redirigir inmediatamente sin setTimeout
-      navigate('/perfil', { replace: true });
+      // 4) Redirigir
+      setTimeout(() => {
+        navigate('/perfil', { replace: true });
+        window.location.reload(); // Forzar recarga para que AuthContext se actualice
+      }, 500);
 
     } catch (error) {
       console.error("Error login:", error);
@@ -64,7 +76,13 @@ const Login = () => {
 
       // limpiar tokens inválidos
       localStorage.removeItem("token");
+      localStorage.removeItem("userRol");
+      localStorage.removeItem("userEmail");
+      localStorage.removeItem("userNombre");
       sessionStorage.removeItem("token");
+      sessionStorage.removeItem("userRol");
+      sessionStorage.removeItem("userEmail");
+      sessionStorage.removeItem("userNombre");
       sessionStorage.removeItem("isLoggedIn");
       sessionStorage.removeItem("userData");
     } finally {

@@ -9,7 +9,7 @@ export function AuthProvider({ children }) {
   const [loadingUser, setLoadingUser] = useState(true);
 
   useEffect(() => {
-    const token = localStorage.getItem("token");
+    const token = localStorage.getItem("token") || sessionStorage.getItem("token");
 
     if (!token) {
       setLoadingUser(false);
@@ -18,8 +18,8 @@ export function AuthProvider({ children }) {
 
     getPerfil()
       .then((perfil) => {
-        // PERFIL NO TRAE EL ROL
-        const rol = localStorage.getItem("userRol") || "USER";
+        // Buscar el rol en ambos lugares
+        const rol = localStorage.getItem("userRol") || sessionStorage.getItem("userRol") || "USER";
 
         setUser({
           ...perfil,
@@ -27,10 +27,10 @@ export function AuthProvider({ children }) {
         });
       })
       .catch(() => {
-        // fallback al localStorage si /perfil falla
-        const email = localStorage.getItem("userEmail");
-        const nombre = localStorage.getItem("userNombre");
-        const rol = localStorage.getItem("userRol");
+        // Fallback al storage si /perfil falla
+        const email = localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail");
+        const nombre = localStorage.getItem("userNombre") || sessionStorage.getItem("userNombre");
+        const rol = localStorage.getItem("userRol") || sessionStorage.getItem("userRol");
 
         if (email && rol) {
           setUser({ email, nombre, rol });
