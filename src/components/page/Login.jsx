@@ -31,7 +31,7 @@ const Login = () => {
 
       const { token } = data;
 
-      // 2) Guardar token
+      // 2) Guardar token PRIMERO
       if (rememberMe) {
         localStorage.setItem("token", token);
       } else {
@@ -48,7 +48,8 @@ const Login = () => {
       setMessage('¡Inicio de sesión exitoso! Redirigiendo...');
       setMessageType('success');
 
-      setTimeout(() => navigate('/perfil'), 1500);
+      // 🔧 Redirigir inmediatamente sin setTimeout
+      navigate('/perfil', { replace: true });
 
     } catch (error) {
       console.error("Error login:", error);
