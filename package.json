@@ -12,6 +12,7 @@
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
+    "lucide-react": "^0.555.0",
     "react-router-dom": "^7.9.4",
     "react-router-hash-link": "^2.4.3",
     "react-scroll": "^1.9.3"
@@ -26,7 +27,7 @@
     "@types/react": "^19.1.16",
     "@types/react-dom": "^19.1.9",
     "@vitejs/plugin-react": "^5.0.4",
-    "axios": "^1.12.2",
+    "axios": "^1.13.2",
     "babel-jest": "^30.2.0",
     "eslint": "^9.36.0",
     "eslint-plugin-react-hooks": "^5.2.0",
