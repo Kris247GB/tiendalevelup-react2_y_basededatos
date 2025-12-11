@@ -1,7 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
-import { getPerfil, logout } from "../services/AuthService";
+import { getPerfil, logout as logoutService } from "../services/AuthService";
 
-const AuthContext = createContext();
+// --- ESTA ES LA LÍNEA CLAVE: DEBE TENER 'export' ---
+export const AuthContext = createContext(); 
 
 export function AuthProvider({ children }) {
 
@@ -18,7 +19,6 @@ export function AuthProvider({ children }) {
 
     getPerfil()
       .then((perfil) => {
-        // Buscar el rol en ambos lugares
         const rol = localStorage.getItem("userRol") || sessionStorage.getItem("userRol") || "USER";
 
         setUser({
@@ -27,7 +27,6 @@ export function AuthProvider({ children }) {
         });
       })
       .catch(() => {
-        // Fallback al storage si /perfil falla
         const email = localStorage.getItem("userEmail") || sessionStorage.getItem("userEmail");
         const nombre = localStorage.getItem("userNombre") || sessionStorage.getItem("userNombre");
         const rol = localStorage.getItem("userRol") || sessionStorage.getItem("userRol");
@@ -35,13 +34,18 @@ export function AuthProvider({ children }) {
         if (email && rol) {
           setUser({ email, nombre, rol });
         } else {
-          logout();
+          logoutService();
           setUser(null);
         }
       })
       .finally(() => setLoadingUser(false));
 
   }, []);
+
+  const logout = () => {
+      logoutService();
+      setUser(null);
+  }
 
   return (
     <AuthContext.Provider value={{

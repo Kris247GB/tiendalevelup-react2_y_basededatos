@@ -1,15 +1,14 @@
-module.exports = {
-  testEnvironment: 'jsdom',
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'],
-  moduleNameMapper: {
-    '\\.(css|less|scss|sass)$': 'identity-obj-proxy',
-  },
+export default {
+  testEnvironment: "jsdom",
+  
+  setupFilesAfterEnv: ['<rootDir>/jest.setup.js'], 
   transform: {
-    '^.+\\.(js|jsx)$': 'babel-jest',
+    "^.+\\.(js|jsx)$": "babel-jest",
+  },
+  moduleNameMapper: {
+    "\\.(css|less|scss)$": "identity-obj-proxy",
   },
   transformIgnorePatterns: [
-    'node_modules/(?!(react-router|react-router-dom)/)',
+    "node_modules/(?!(axios)/)", 
   ],
-  clearMocks: true,
-  resetMocks: true,
 };
